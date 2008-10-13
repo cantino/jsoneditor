@@ -39,41 +39,118 @@
         margin:0;
         padding:0;
       }
+      div {
+        background-color:#cfc;
+        margin:1px;
+        padding:2px;
+        xpadding-left:0;
+      }
       blockquote{
-        margin-left:15px;
+        padding-left:15px;
+      }
+      .val{
+        font-style:italic;
+      }
+      .key a, .val a{
+        color:black;
+        text-decoration:none;
+      }
+      .icon{
+        display:block;
+        float:right;
+        text-decoration:none;
+        padding-left:5px;
+        color:blue;
       }
     </style>
     <script src="jquery-1.2.6.js"></script>
     <script>
     
+      function edit(e){
+        if(!e.editing){
+          e.editing = true;
+          var input = document.createElement("INPUT");
+          input.value = e.innerText;
+          input.onblur = function(){
+            var val = input.value;
+            e.innerHTML = "";
+            e.innerText = val;
+            e.editing = false;
+          }
+          e.innerText = "";
+          $(e).append(input);
+          input.focus();
+        }
+      }
+      
+      function inspect(e){
+        var builder = $(".builder", e).clone();
+        $(".icon", builder).remove();
+        $(".editable", builder).each(function(i){
+          $(this).prepend('"');
+          $(this).append('"');
+        });
+        var txt = builder.text();
+        
+        alert(txt);
+      }
+      
+      function insert(button){
+        $(button.parentNode.nextSibling).append('<div>'+DELETE+BRACE+BRACKET+'<b class="key">'+
+          editable("key")+'</b>:<span class="val">'+
+          editable("value")+'</span> </div>'
+        );
+      }
+      
+      function editable(text){
+        return '<a class="editable" href="#" onclick="edit(this);return false">'+text+'</a>';
+      }
+    
       function JSONEditor(wrapped) {
         
+        
         function build(json, node){
-          var last = null;
-          for(var i in json){
-            if(last) last.innerText = "},"
-            node.append('<div>{</div>');
-            var div = $(document.createElement("BLOCKQUOTE"));
-            node.append(div);
-            if(json[i] instanceof Array){
-              div.append(document.createTextNode("[" + json[i][0] + "]"));
-            } else if (json[i] instanceof Object){
-              div.append(document.createTextNode(i));
-              build(json[i], div);
-            } else {
-              div.append(document.createTextNode(json[i].toString()));
+          node = $(node);
+          if(json instanceof Array){
+            var bq = $(document.createElement("BLOCKQUOTE"));
+            node.append(bq);
+            build(json[0], bq);
+            node.append("<div>]</div>");
+          } else if (json instanceof Object){          
+              node.append('<div>'+DELETE+ADD+'{</div>');
+            var bq = $(document.createElement("BLOCKQUOTE"));
+            node.append(bq);
+            for(var i in json){
+              var div = document.createElement("DIV");
+              div.innerHTML = DELETE+BRACE+BRACKET+'<b class="key">'+editable(i)+'</b>: ';
+              if(json[i] instanceof Array) {
+                div.innerHTML += "[";
+              } else if (json[i] instanceof Object){          
+                //nothing
+              } else{
+                $(div).append('<span class="val">'+editable(json[i].toString())+'</span>')
+              }
+               
+              bq.append(div);
+              build(json[i],bq);
             }
-            last = document.createElement("DIV")
-            last.innerText = "}";
-            node.append(last);
+            node.append('<div>}</div>');
+          } else{  
+            // ignore, already handled
           }
         }
+        
+        var BRACE = '<a class="icon" href="#"><strong>{</strong></a>';
+        var BRACKET = '<a class="icon" href="#"><strong>[</a>';
+        var DELETE = '<a class="icon" href="#"><img src="delete.png" /></a>';
+        var ADD = '<a class="icon" href="#" onclick="insert(this);return false"><img src="add.png" /></a>';
         
         var TAB_SIZE = 30;
         var guid = "something"; // FIXME
         var wrapped = wrapped;
         var builderTab = '<li><a href="javascript:$(\'.builder\', $(\'#'+guid+'\')).show()">builder</a></li>';
         var textTab = '<li><a href="javascript:$(\'.builder\', $(\'#'+guid+'\')).hide()">text</a></li>';
+        var debugTab = '<li><a href="javascript:inspect($(\'#'+guid+'\'))">debug</a></li>';
         
         wrapped.wrap('<div id="'+guid+'" class="container"></div>');
         container = $("#"+guid);
@@ -81,6 +158,7 @@
         var tabs = $(".tabs", container);
         tabs.append(builderTab);
         tabs.append(textTab);
+        tabs.append(debugTab);
         
         container.width(wrapped.width()).height(wrapped.height() + TAB_SIZE);
         container.css("position", "relative");
@@ -100,37 +178,14 @@
     </script>
   </head>
   <body>
-    <textarea id="t">
-      {"employee":{"gid":"102",
-      "companyID":"121",
-      "defaultActionID":"444",
-      "names":{"firstName":"Stive",
-      "middleInitial":"Jr",
-      "lastName":"Martin"},
-      "address":{"city":"Albany",
-      "state":"NY",
-      "zipCode":"14410-585",
-      "addreess":"41 State Street"},
-      "job":{"departmentID":"102",
-      "jobTitleID":"100",
-      "hireDate":"1/02/2000",
-      "terminationDate":"1/12/2007"},
-      "contact":{"phoneHome":"12-123-2133",
-      "beeper":"5656",
-      "email1":"info@soft-amis.com",
-      "fax":"21-321-23223",
-      "phoneMobile":"32-434-3433",
-      "phoneOffice":"82-900-8993"},
-      "login":{"employeeID":"eID102",
-      "password":"password",
-      "superUser":"true",
-      "lastLoginDate":"1/12/2007",
-      "text":"text",
-      "regexp":"/^mmm/",
-      "date":{}},
-      "comment":{"PCDATA":"comment"},
-      "roles":[{"role":"102"},
-      {"role":"103"}]}}
+<textarea id="t">{
+  "name": "a.title",
+  "description": "foo.bar",
+  "authors": [{
+    "name": "p.foo",
+    "link": "a | @href"
+  }]
+}
     </textarea>
   </body>  
 </html>
