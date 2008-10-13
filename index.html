@@ -1,0 +1,136 @@
+<html>
+  <head>
+    <style>
+      body {
+        margin:5%;
+        font-family:sans-serif;
+      }
+      #t {
+        width:500px;
+        height:300px;
+      }
+      .container{
+        background-color:#eee;
+      }
+      .tabs {
+        margin:0;
+        padding:0;
+      }
+      .tabs li{
+        float:left;
+        list-style:none;
+        margin:4px;
+        background-color:silver;
+      }
+      .tabs a{
+        display:block;
+        padding:4px 16px 14px 16px;
+        text-decoration:none;
+        font-size:16px;
+        color:black;
+        -webkit-border-radius: 10px;
+        border: 1px solid #000;
+      }
+      .builder {
+        background-color:white;
+        overflow:auto;
+      }
+      div, blockquote{
+        margin:0;
+        padding:0;
+      }
+      blockquote{
+        margin-left:15px;
+      }
+    </style>
+    <script src="jquery-1.2.6.js"></script>
+    <script>
+    
+      function JSONEditor(wrapped) {
+        
+        function build(json, node){
+          var last = null;
+          for(var i in json){
+            if(last) last.innerText = "},"
+            node.append('<div>{</div>');
+            var div = $(document.createElement("BLOCKQUOTE"));
+            node.append(div);
+            if(json[i] instanceof Array){
+              div.append(document.createTextNode("[" + json[i][0] + "]"));
+            } else if (json[i] instanceof Object){
+              div.append(document.createTextNode(i));
+              build(json[i], div);
+            } else {
+              div.append(document.createTextNode(json[i].toString()));
+            }
+            last = document.createElement("DIV")
+            last.innerText = "}";
+            node.append(last);
+          }
+        }
+        
+        var TAB_SIZE = 30;
+        var guid = "something"; // FIXME
+        var wrapped = wrapped;
+        var builderTab = '<li><a href="javascript:$(\'.builder\', $(\'#'+guid+'\')).show()">builder</a></li>';
+        var textTab = '<li><a href="javascript:$(\'.builder\', $(\'#'+guid+'\')).hide()">text</a></li>';
+        
+        wrapped.wrap('<div id="'+guid+'" class="container"></div>');
+        container = $("#"+guid);
+        container.prepend('<ul class="tabs"></ul>');
+        var tabs = $(".tabs", container);
+        tabs.append(builderTab);
+        tabs.append(textTab);
+        
+        container.width(wrapped.width()).height(wrapped.height() + TAB_SIZE);
+        container.css("position", "relative");
+        container.append('<div class="builder"></div>');
+        var builder = $(".builder", container);
+        builder.css("position", "absolute").css("top", TAB_SIZE + "px").css("left", 0);
+        builder.width(wrapped.width()).height(wrapped.height());
+        
+        wrapped.css("position", "absolute").css("top", TAB_SIZE + "px").css("left", 0);
+        build(eval("("+wrapped.val()+")"), builder);
+        return this;  
+      }
+    
+      $(document).ready(function(){
+        var j = JSONEditor($("#t"));
+      });
+    </script>
+  </head>
+  <body>
+    <textarea id="t">
+      {"employee":{"gid":"102",
+      "companyID":"121",
+      "defaultActionID":"444",
+      "names":{"firstName":"Stive",
+      "middleInitial":"Jr",
+      "lastName":"Martin"},
+      "address":{"city":"Albany",
+      "state":"NY",
+      "zipCode":"14410-585",
+      "addreess":"41 State Street"},
+      "job":{"departmentID":"102",
+      "jobTitleID":"100",
+      "hireDate":"1/02/2000",
+      "terminationDate":"1/12/2007"},
+      "contact":{"phoneHome":"12-123-2133",
+      "beeper":"5656",
+      "email1":"info@soft-amis.com",
+      "fax":"21-321-23223",
+      "phoneMobile":"32-434-3433",
+      "phoneOffice":"82-900-8993"},
+      "login":{"employeeID":"eID102",
+      "password":"password",
+      "superUser":"true",
+      "lastLoginDate":"1/12/2007",
+      "text":"text",
+      "regexp":"/^mmm/",
+      "date":{}},
+      "comment":{"PCDATA":"comment"},
+      "roles":[{"role":"102"},
+      {"role":"103"}]}}
+    </textarea>
+  </body>  
+</html>
