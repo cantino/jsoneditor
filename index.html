@@ -63,9 +63,10 @@
         color:blue;
       }
     </style>
-    <script src="jquery-1.2.6.js"></script>
-    <script src="json2.js"></script>
-    <script>
+    <script type="text/javascript" src="jquery-1.2.6.js"></script>
+    <script type="text/javascript" src="json2.js"></script>
+    <script type="text/javascript" src="jquery.timers.js"></script>
+    <script type="text/javascript">
       function JSONEditorBase() {
         this.TAB_SIZE = 30;
       }
@@ -78,16 +79,6 @@
         this.wrapped.wrap('<div class="container"></div>');
         this.container = $(this.wrapped.parent());
 
-        this.BRACE = function() { return $('<a class="icon" href="#"><strong>{</strong></a>') };
-        this.BRACKET = function() { return $('<a class="icon" href="#"><strong>[</a>') };
-        this.DELETE = function() { return $('<a class="icon" href="#"><img src="delete.png" /></a>') };
-        this.ADD = function() {
-          return $('<a class="icon" href="#"><img src="add.png" /></a>').click(function(e) {
-            self.insert(this);
-            return false;
-          });
-        };
-
         this.builderTab = $('<li><a href="#">builder</a></li>').click(function(e) {
           self.rebuild();
           self.builder.show();
@@ -96,7 +87,7 @@
         });
         
         this.textTab = $('<li><a href="#">text</a></li>').click(function(e) {
-          self.storeToText();
+          self.rebuild();
           self.builder.hide();
           self.wrapped.show();
           return false;
@@ -117,20 +108,60 @@
         this.container.css("position", "relative");
         
         this.rebuild();
-        this.storeToText();
         
         return this;
       }
       JSONEditor.prototype = new JSONEditorBase();
       
+      JSONEditor.prototype.BRACE = function(key, struct) {
+        var self = this;
+        return $('<a class="icon" href="#"><strong>{</strong></a>').click(function(e) {
+          struct[key] = { "??": struct[key] };
+          self.rebuild();
+          return false;
+        });
+      };
+      
+      JSONEditor.prototype.BRACKET = function(key, struct) {
+        var self = this;
+        return $('<a class="icon" href="#"><strong>[</a>').click(function(e) {
+          struct[key] = [ struct[key] ];
+          self.rebuild();
+          return false;
+        });
+      };
+      
+      JSONEditor.prototype.DELETE = function(key, struct) {
+        var self = this;
+        return $('<a class="icon" href="#"><img src="delete.png" /></a>').click(function(e) {
+          delete struct[key];
+          self.rebuild();
+          return false;
+        });
+      };
+      
+      JSONEditor.prototype.ADD = function(struct) {
+        var self = this;
+        return $('<a class="icon" href="#"><img src="add.png" /></a>').click(function(e) {
+          struct['??'] = '??';
+          self.rebuild();
+          return false;
+        });
+      };
+      
       JSONEditor.prototype.storeToText = function() {
-        this.wrapped.get(0).value = (JSON.stringify(this.json, null, 2));
+        this.wrapped.get(0).value = JSON.stringify(this.json, null, 2);
       };
       
       JSONEditor.prototype.rebuild = function() {
+        if (this.json) this.storeToText();
         this.cleanBuilder();
-        this.json = JSON.parse(this.wrapped.val());
+        this.json = JSON.parse(this.wrapped.get(0).value);
         this.build(this.json, this.builder);
+      };
+      
+      JSONEditor.prototype.logJSON = function() {
+        console.log(JSON.stringify(this.json, null, 2));
       };
       
       JSONEditor.prototype.cleanBuilder = function() {
@@ -148,14 +179,14 @@
       };
       
       JSONEditor.prototype.edit = function(e, key, struct, kind){
+        var self = this;
         var input = document.createElement("INPUT");
         input.value = e.text();
-        input.onblur = function(){
+        input.onblur = function() {
           var val = input.value;
-          
           if(kind == 'key') {
             struct[val] = struct[key];
-            delete struct[key];
+            if (key != val) delete struct[key];
           } else {
             struct[key] = val;
           }
@@ -178,59 +209,54 @@
         alert(txt);
       }
       
-      // JSONEditor.prototype.insert = function(button){
-      //   $(button.parentNode.nextSibling).append('<div>'+this.DELETE+this.BRACE+this.BRACKET+'<b class="key">'+
-      //     this.editable("key")+'</b>:<span class="val">'+
-      //     this.editable("value")+'</span> </div>'
-      //   );
-      // }
-
-      JSONEditor.prototype.editable = function(text, key, struct, kind){
+      JSONEditor.prototype.editable = function(text, key, struct, kind) {
         var self = this;
-        return $('<span class="editable" href="#"></span>').text(text).click(function(e) {
+        var elem = $('<span class="editable" href="#"></span>').text(text).click(function(e) {
           if (!this.editing) {
             this.editing = true;
             self.edit($(this), key, struct, kind);
           }
           return true;
         });
+        
+        // Auto-edit '??' keys.
+        if (kind == 'key' && text == '??') {
+          elem.click();
+          $(this).oneTime(100, function() { // Because JavaScript is annoying and we need to focus once the current stuff is done.
+            elem.get(0).firstChild.focus();
+          });
+        }
+        return elem;
       }
       
-      JSONEditor.prototype.build = function(json, node) {
+      JSONEditor.prototype.build = function(json, node, parent, key) {
         if(json instanceof Array){
           var bq = $(document.createElement("BLOCKQUOTE"));
           var bq2 = $(document.createElement("BLOCKQUOTE"));
           bq.append($("<div>[</div>"));
           bq.append(bq2);
-          this.build(json[0], bq2);
+          for(var i = 0; i < json.length; i++) {
+            this.build(json[0], bq2, i, json);
+          }
           bq.append($("<div>]</div>"));
           node.append(bq);
         } else if (json instanceof Object) {
-          node.append($('<div>{</div>').prepend(this.DELETE()).prepend(this.ADD()));
+          node.append($('<div>{</div>').prepend(this.DELETE(key, parent)).prepend(this.ADD(json)));
           var bq = $(document.createElement("BLOCKQUOTE"));
           node.append(bq);
           for(var i in json){
             var div = $('<div></div>');
-            div.append(this.DELETE());
-            div.append(this.BRACE());
-            div.append(this.BRACKET());
+            div.append(this.DELETE(i.toString(), json));
+            div.append(this.BRACE(i.toString(), json));
+            div.append(this.BRACKET(i.toString(), json));
             div.append(this.editable(i.toString(), i.toString(), json, 'key').wrap('<b class="key"></b>').parent());
-            div.append(document.createTextNode(': '));
-            
-            if(json[i] instanceof Array) {
-              div.innerHTML += "[";
-            } else if (json[i] instanceof Object) {
-              //nothing
-            } else{
-              $(div).append(this.editable(json[i].toString(), i.toString(), json, 'value').wrap('<span class="val"></span>').parent());
-            }
-           
+            div.append(document.createTextNode(': ')); 
+            this.build(json[i], div, json, i);
             bq.append(div);
-            this.build(json[i], bq);
           }
           node.append($('<div>}</div>'));
         } else {
-          // ignore, already handled
+          node.append(this.editable(json.toString(), key, parent, 'value').wrap('<span class="val"></span>').parent());
         }
       };
     </script>
