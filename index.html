@@ -74,7 +74,7 @@
       function JSONEditorBase() {
         this.TAB_SIZE = 30;
         this.history = [];
-        this.historyPointer = 0;
+        this.historyPointer = -1;
       }
       
       function JSONEditor(wrapped) {
@@ -86,7 +86,8 @@
         this.container = $(this.wrapped.parent());
 
         this.builderTab = $('<li><a href="#">builder</a></li>').click(function(e) {
-          self.rebuild(true);
+          self.setJsonFromText();
+          self.rebuild();
           self.builder.show();
           self.wrapped.hide();
           return false;
@@ -98,15 +99,9 @@
           return false;
         });
         
-        this.debugTab = $('<li><a href="#">debug</a></li>').click(function(e) {
-          self.inspect(self.container);
-          return false;
-        });
-        
         this.tabs = $('<ul class="tabs"></ul>');
         this.tabs.append(this.builderTab);
         this.tabs.append(this.textTab);
-        this.tabs.append(this.debugTab);
         this.container.prepend(this.tabs);
                 
         this.container.width(this.wrapped.width()).height(this.wrapped.height() + this.TAB_SIZE);
@@ -180,16 +175,22 @@
       };
       
       JSONEditor.prototype.undo = function() {
-        if (this.historyPointer - 1 >= 0) {
-          this.historyPointer -= 1;
+        this.saveStateIfTextChanged();
+        if (this.historyPointer > 0) this.historyPointer -= 1;
+        this.restore();
+      };
+            
+      JSONEditor.prototype.redo = function() {
+        if (this.historyPointer + 1 < this.history.length) {
+          this.saveStateIfTextChanged();
+          this.historyPointer += 1;
           this.restore();
         }
       };
       
-      JSONEditor.prototype.redo = function() {
-        if (this.historyPointer + 1 < this.history.length) {
-          this.historyPointer += 1;
-          this.restore();
+      JSONEditor.prototype.saveStateIfTextChanged = function() {
+        if (JSON.stringify(this.json, null, 2) != this.wrapped.get(0).value) {
+          this.saveState(true);
         }
       };
       
@@ -200,9 +201,9 @@
         }
       };
 
-      JSONEditor.prototype.saveState = function() {
+      JSONEditor.prototype.saveState = function(skipStoreText) {
         if (this.json) {
-          this.storeToText();
+          if (!skipStoreText) this.storeToText();
           var text = this.wrapped.get(0).value;
           if (this.history[this.historyPointer] != text) {
             this.historyTruncate();
@@ -278,18 +279,6 @@
         $(e).html(form);
         input.focus();
       };
-      
-      JSONEditor.prototype.inspect = function(e){
-        var builder = this.builder.clone();
-        $(".icon", builder).remove();
-        $(".editable", builder).each(function(i){
-          $(this).prepend('"');
-          $(this).append('"');
-        });
-        var txt = builder.text();
-        
-        alert(txt);
-      }
       
       JSONEditor.prototype.editable = function(text, key, struct, kind) {
         var self = this;
