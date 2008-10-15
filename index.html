@@ -73,6 +73,8 @@
     <script type="text/javascript">
       function JSONEditorBase() {
         this.TAB_SIZE = 30;
+        this.history = [];
+        this.historyPointer = 0;
       }
       
       function JSONEditor(wrapped) {
@@ -91,7 +93,6 @@
         });
         
         this.textTab = $('<li><a href="#">text</a></li>').click(function(e) {
-          self.rebuild();
           self.builder.hide();
           self.wrapped.show();
           return false;
@@ -178,16 +179,62 @@
         });
       };
       
+      JSONEditor.prototype.undo = function() {
+        if (this.historyPointer - 1 >= 0) {
+          this.historyPointer -= 1;
+          this.restore();
+        }
+      };
+      
+      JSONEditor.prototype.redo = function() {
+        if (this.historyPointer + 1 < this.history.length) {
+          this.historyPointer += 1;
+          this.restore();
+        }
+      };
+      
+      JSONEditor.prototype.restore = function() {
+        if (this.history[this.historyPointer]) {
+          this.wrapped.get(0).value = this.history[this.historyPointer];
+          this.rebuild(true);
+        }
+      };
+
+      JSONEditor.prototype.saveState = function() {
+        if (this.json) {
+          this.storeToText();
+          var text = this.wrapped.get(0).value;
+          if (this.history[this.historyPointer] != text) {
+            this.historyTruncate();
+            this.history.push(text);
+            this.historyPointer += 1;
+          }
+        }
+      };
+
+      JSONEditor.prototype.historyTruncate = function() {
+        if (this.historyPointer + 1 < this.history.length) {
+          this.history.splice(this.historyPointer + 1, this.history.length - this.historyPointer);
+        }
+      };
+      
       JSONEditor.prototype.storeToText = function() {
         this.wrapped.get(0).value = JSON.stringify(this.json, null, 2);
       };
       
       JSONEditor.prototype.rebuild = function(doNotRefreshText) {
-        if (this.json && !doNotRefreshText) this.storeToText();
+        if (!this.json) this.setJsonFromText();
+        if (this.json && !doNotRefreshText) {
+          this.saveState();
+        }
         this.cleanBuilder();
-        this.json = JSON.parse(this.wrapped.get(0).value);
+        this.setJsonFromText();
         this.alreadyFocused = false;
         this.build(this.json, this.builder);
+      };
+      
+      JSONEditor.prototype.setJsonFromText = function() {
+        this.json = JSON.parse(this.wrapped.get(0).value);
       };
       
       JSONEditor.prototype.logJSON = function() {
@@ -310,6 +357,13 @@
     <script>
       $(document).ready(function(){
         var j = new JSONEditor($("#t"));
+        $('#buttons').append($('<a href="#"></a>').click(function() {
+          j.undo();
+          return false;
+        }).text('Undo')).append($('<a href="#"></a>').click(function() {
+          j.redo();
+          return false;
+        }).text('Redo'));
       });
     </script>
   </head>
@@ -323,5 +377,6 @@
   }]
 }
     </textarea>
+    <div id='buttons'></div>
   </body>  
 </html>
