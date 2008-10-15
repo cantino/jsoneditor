@@ -35,7 +35,11 @@
         background-color:white;
         overflow:auto;
       }
-      div, blockquote{
+      div{
+        margin:0;
+        padding:0;
+      }
+      blockquote{
         margin:0;
         padding:0;
       }
@@ -164,7 +168,11 @@
       JSONEditor.prototype.ADD = function(struct) {
         var self = this;
         return $('<a class="icon" href="#"><img src="add.png" border=0/></a>').click(function(e) {
-          struct['??'] = '??';
+          if (struct instanceof Array) {
+            struct.push('??');
+          } else {
+            struct['??'] = '??';
+          }
           self.rebuild();
           return false;
         });
@@ -260,35 +268,41 @@
       JSONEditor.prototype.build = function(json, node, parent, key) {
         if(json instanceof Array){
           var bq = $(document.createElement("BLOCKQUOTE"));
-          var bq2 = $(document.createElement("BLOCKQUOTE"));
           bq.append($("<div>[</div>"));
+          
           if (parent) bq.prepend(this.DELETE(key, parent));
-          bq.append(bq2);
+          bq.prepend(this.ADD(json));
+
           for(var i = 0; i < json.length; i++) {
-//            if (parent) bq.prepend(this.DELETE(key, parent));
-            this.build(json[0], bq2, json, i);
+            var innerbq = $(document.createElement("BLOCKQUOTE"));
+            this.build(json[i], innerbq, json, i);
+            bq.append(innerbq);
           }
+          
           bq.append($("<div>]</div>"));
           node.append(bq);
         } else if (json instanceof Object) {
-          node.append($('<div>{</div>'));
-          if (parent) node.prepend(this.DELETE(key, parent, true));
-          node.prepend(this.ADD(json));
           var bq = $(document.createElement("BLOCKQUOTE"));
-          node.append(bq);
+          bq.append($('<div>{</div>'));
+
+          if (parent) bq.prepend(this.DELETE(key, parent, true));
+          bq.prepend(this.ADD(json));
+
           for(var i in json){
-            var div = $('<div></div>');
-            div.append(this.BRACE(i.toString(), json));
-            div.append(this.BRACKET(i.toString(), json));
-            div.append(this.editable(i.toString(), i.toString(), json, 'key').wrap('<b class="key"></b>').parent());
-            div.append(document.createTextNode(': ')); 
-            this.build(json[i], div, json, i);
-            bq.append(div);
+            var innerbq = $(document.createElement("BLOCKQUOTE"));
+            innerbq.append(this.editable(i.toString(), i.toString(), json, 'key').wrap('<b class="key"></b>').parent());
+            innerbq.append(document.createTextNode(': ')); 
+            this.build(json[i], innerbq, json, i);
+            bq.append(innerbq);
           }
-          node.append($('<div>}</div>'));
+          
+          bq.append($('<div>}</div>'));
+          node.append(bq);
         } else {
-          if (parent) node.prepend(this.DELETE(key, parent));
           node.append(this.editable(json.toString(), key, parent, 'value').wrap('<span class="val"></span>').parent());
+          if (parent) node.prepend(this.DELETE(key, parent));
+          node.prepend(this.BRACE(key, parent));
+          node.prepend(this.BRACKET(key, parent));
         }
       };
     </script>
