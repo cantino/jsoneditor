@@ -1,0 +1,68 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+
+<html>
+  <head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">  
+    <title>JSON Editor Tests</title>
+    <link rel="stylesheet" type="text/css" href="../jsunit/css/jsUnitStyle.css">
+
+<script language="JavaScript" type="text/javascript" src="../jquery-1.2.6.js"></script>
+<script language="JavaScript" type="text/javascript" src="../json2.js"></script>
+<script language="JavaScript" type="text/javascript" src="../jquery.timers.js"></script>
+<script language="JavaScript" type="text/javascript" src="../editor.js"></script>
+
+<script language="JavaScript" type="text/javascript" src="../jsunit/app/jsUnitCore.js"></script>
+
+<script language="JavaScript" type="text/javascript">
+
+  function testLoadingFromTextArea() {
+    var j = new JSONEditor($("#t"));
+    assertTrue(j.getJSONText().search("a.title") > -1);
+    assertEquals(j.getJSON()['name'], "a.title");
+  }
+
+  function testLoadingFromEmptyTextAreas() {
+    var j = new JSONEditor($("#t_empty1"));
+    assertEquals(j.getJSONText(), '{}');
+    assertEquals(typeof j.getJSON(), 'object');
+
+    j = new JSONEditor($("#t_empty2"));
+    assertEquals(j.getJSONText(), '{}');
+    assertEquals(typeof j.getJSON(), 'object');
+  }
+  
+  
+
+</script>
+  </head>
+
+  <body>
+    <h1>JSON Editor Tests</h1>
+    <p>This page contains tests for the JSON Editor using jsUnit. To see them, take a look at the source.</p>
+  <p />&nbsp;</p>
+  <p />&nbsp;</p>
+  <p />&nbsp;</p>
+  <p />&nbsp;</p>
+  <p />&nbsp;</p>
+  
+  <textarea id="t">
+    {
+      "name": "a.title",
+      "description": "foo.bar",
+      "authors": [{
+        "name": "p.foo",
+        "link": "a | @href"
+      }]
+    }
+  </textarea>
+  
+  <textarea id="t_empty1"></textarea>
+  <textarea id="t_empty2">{}</textarea>
+
+  <script>
+  </script>
+
+  </body>
+</html>
+

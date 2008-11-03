@@ -1,87 +1,26 @@
 <html>
   <head>
-    <style>
-      body {
-        margin:5%;
-        font-family:sans-serif;
-      }
-      #t {
-        width:500px;
-        height:300px;
-      }
-      .container{
-        background-color:#eee;
-      }
-      .tabs {
-        margin:0;
-        padding:0;
-      }
-      .tabs li{
-        float:left;
-        list-style:none;
-        margin:4px;
-        background-color:silver;
-      }
-      .tabs a{
-        display:block;
-        padding:4px 16px 14px 16px;
-        text-decoration:none;
-        font-size:16px;
-        color:black;
-        -webkit-border-radius: 10px;
-        border: 1px solid #000;
-      }
-      .builder {
-        background-color:white;
-        overflow:auto;
-      }
-      div{
-        margin:0;
-        padding:0;
-      }
-      blockquote{
-        margin:0;
-        padding:0;
-      }
-      div {
-        background-color:#cfc;
-        margin:1px;
-        padding:2px;
-        xpadding-left:0;
-      }
-      blockquote{
-        padding-left:15px;
-      }
-      .val{
-        font-style:italic;
-      }
-      .key a, .val a{
-        color:black;
-        text-decoration:none;
-      }
-      .icon{
-        display:block;
-        float:right;
-        text-decoration:none;
-        padding-left:5px;
-        color:blue;
-      }
-    </style>
+    <link href="editor.css" rel="stylesheet" type="text/css" />
     <script type="text/javascript" src="jquery-1.2.6.js"></script>
     <script type="text/javascript" src="json2.js"></script>
     <script type="text/javascript" src="jquery.timers.js"></script>
     <script type="text/javascript" src="editor.js"></script>
     
     <script>
+      // Setup control buttons at bottom.
+      
       $(document).ready(function(){
         var j = new JSONEditor($("#t"));
-        $('#buttons').append($('<a href="#"></a>').click(function() {
+        $('#buttons').append($('<a href="#" style="padding-right: 10px;"></a>').click(function() {
           j.undo();
           return false;
-        }).text('Undo')).append($('<a href="#"></a>').click(function() {
+        }).text('Undo')).append($('<a href="#" style="padding-right: 10px;"></a>').click(function() {
           j.redo();
           return false;
-        }).text('Redo'));
+        }).text('Redo')).append($('<a href="#" style="padding-right: 10px;"></a>').click(function() {
+          j.toggleBuilder();
+          return false;
+        }).text('Toggle View'));
       });
     </script>
   </head>
