@@ -1,26 +1,17 @@
 <html>
   <head>
-    <link href="editor.css" rel="stylesheet" type="text/css" />
-    <script type="text/javascript" src="jquery-1.2.6.js"></script>
-    <script type="text/javascript" src="json2.js"></script>
-    <script type="text/javascript" src="jquery.timers.js"></script>
-    <script type="text/javascript" src="editor.js"></script>
+    <link href="jsoneditor/editor.css" rel="stylesheet" type="text/css" />
+    <script type="text/javascript" src="jsoneditor/jquery-1.2.6.js"></script>
+    <script type="text/javascript" src="jsoneditor/json2.js"></script>
+    <script type="text/javascript" src="jsoneditor/jquery.timers.js"></script>
+    <script type="text/javascript" src="jsoneditor/editor.js"></script>
     
     <script>
       // Setup control buttons at bottom.
       
       $(document).ready(function(){
         var j = new JSONEditor($("#t"));
-        $('#buttons').append($('<a href="#" style="padding-right: 10px;"></a>').click(function() {
-          j.undo();
-          return false;
-        }).text('Undo')).append($('<a href="#" style="padding-right: 10px;"></a>').click(function() {
-          j.redo();
-          return false;
-        }).text('Redo')).append($('<a href="#" style="padding-right: 10px;"></a>').click(function() {
-          j.toggleBuilder();
-          return false;
-        }).text('Toggle View'));
+        j.showFunctionButtons();
       });
     </script>
   </head>
@@ -34,6 +25,5 @@
   }]
 }
     </textarea>
-    <div id='buttons'></div>
   </body>  
 </html>

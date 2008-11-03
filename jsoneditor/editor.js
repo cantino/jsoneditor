@@ -2,6 +2,8 @@ function JSONEditorBase() {
   this.history = [];
   this.historyPointer = -1;
   this.builderShowing = true;
+  this.ADD_IMG = 'jsoneditor/add.png';
+  this.DELETE_IMG = 'jsoneditor/delete.png';
 }
 
 function JSONEditor(wrapped, width, height) {
@@ -12,8 +14,6 @@ function JSONEditor(wrapped, width, height) {
 
   this.wrapped.wrap('<div class="container"></div>');
   this.container = $(this.wrapped.parent());
-  this.container.css("position", "relative");
-          
   this.container.width(width).height(height);
   this.wrapped.width(width).height(height);
   this.container.css("position", "relative");
@@ -44,7 +44,7 @@ JSONEditor.prototype.bracketUI = function(key, struct) {
 
 JSONEditor.prototype.deleteUI = function(key, struct, layerOnly) {
   var self = this;
-  return $('<a class="icon" href="#"><img src="delete.png" border=0/></a>').click(function(e) {
+  return $('<a class="icon" href="#"><img src="' + this.DELETE_IMG + '" border=0/></a>').click(function(e) {
     var didSomething = false;
     if (struct[key] instanceof Array) {
       if(struct[key].length > 0) {
@@ -74,7 +74,7 @@ JSONEditor.prototype.deleteUI = function(key, struct, layerOnly) {
 
 JSONEditor.prototype.addUI = function(struct) {
   var self = this;
-  return $('<a class="icon" href="#"><img src="add.png" border=0/></a>').click(function(e) {
+  return $('<a class="icon" href="#"><img src="' + this.ADD_IMG + '" border=0/></a>').click(function(e) {
     if (struct instanceof Array) {
       struct.push('??');
     } else {
@@ -118,6 +118,27 @@ JSONEditor.prototype.toggleBuilder = function() {
       this.showBuilder();
     }
     this.builderShowing = !this.builderShowing;
+};
+
+JSONEditor.prototype.showFunctionButtons = function() {
+  if (!this.functionButtons) {
+    this.functionButtons = $('<div class="function_buttons"></div>');
+    var self = this;
+    this.functionButtons.append($('<a href="#" style="padding-right: 10px;"></a>').click(function() {
+      self.undo();
+      return false;
+    }).text('Undo')).append($('<a href="#" style="padding-right: 10px;"></a>').click(function() {
+      self.redo();
+      return false;
+    }).text('Redo')).append($('<a href="#" style="padding-right: 10px;"></a>').click(function() {
+      self.toggleBuilder();
+      return false;
+    }).text('Toggle View'));
+    this.functionButtons.css("position", "absolute");
+    this.functionButtons.css("top", this.wrapped.height() + 5);
+    this.container.append(this.functionButtons);
+    this.container.height(this.container.height() + this.functionButtons.height() + 5);
+  }
 };
 
 JSONEditor.prototype.saveStateIfTextChanged = function() {

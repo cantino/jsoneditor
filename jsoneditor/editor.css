@@ -1,6 +1,7 @@
 <style>
   .container{
     background-color:#eee;
+    position:relative;
   }
   .container .builder {
     background-color:white;
