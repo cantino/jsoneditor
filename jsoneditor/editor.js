@@ -1,3 +1,14 @@
+/*
+
+  Inline JSON Editor
+  by
+    Andrew Cantino
+    Kyle Maxwell
+  Copyright 2008
+  Version 0.5
+
+*/
+
 function JSONEditorBase() {
   this.history = [];
   this.historyPointer = -1;
@@ -86,38 +97,48 @@ JSONEditor.prototype.addUI = function(struct) {
 };
 
 JSONEditor.prototype.undo = function() {
-  this.saveStateIfTextChanged();
-  if (this.historyPointer > 0) this.historyPointer -= 1;
-  this.restore();
+  if (this.saveStateIfTextChanged()) {
+    if (this.historyPointer > 0) this.historyPointer -= 1;
+    this.restore();
+  }
 };
       
 JSONEditor.prototype.redo = function() {
   if (this.historyPointer + 1 < this.history.length) {
-    this.saveStateIfTextChanged();
-    this.historyPointer += 1;
-    this.restore();
+    if (this.saveStateIfTextChanged()) {
+      this.historyPointer += 1;
+      this.restore();
+    }
   }
 };
 
 JSONEditor.prototype.showBuilder = function() {
+  if (this.checkJsonInText()) {
     this.setJsonFromText();
     this.rebuild();
     this.builder.show();
-    this.wrapped.hide();  
+    this.wrapped.hide();
+    return true;
+  } else {
+    alert("Sorry, there appears to be an error in your JSON input.  Please fix it before continuing.");
+    return false;
+  }
 };
 
 JSONEditor.prototype.showText = function() {
-    this.builder.hide();
-    this.wrapped.show();
+  this.builder.hide();
+  this.wrapped.show();
 };
 
 JSONEditor.prototype.toggleBuilder = function() {
     if(this.builderShowing){
       this.showText();
+      this.builderShowing = !this.builderShowing;
     } else {
-      this.showBuilder();
+      if (this.showBuilder()) {
+        this.builderShowing = !this.builderShowing;
+      }
     }
-    this.builderShowing = !this.builderShowing;
 };
 
 JSONEditor.prototype.showFunctionButtons = function() {
@@ -143,8 +164,18 @@ JSONEditor.prototype.showFunctionButtons = function() {
 
 JSONEditor.prototype.saveStateIfTextChanged = function() {
   if (JSON.stringify(this.json, null, 2) != this.wrapped.get(0).value) {
-    this.saveState(true);
+    if (this.checkJsonInText()) {
+      this.saveState(true);
+    } else {
+      if (confirm("The current JSON is malformed.  If you continue, the current JSON will not be saved.  Do you wish to continue?")) {
+        this.historyPointer += 1;
+        return true;
+      } else {
+        return false;
+      }
+    }
   }
+  return true;
 };
 
 JSONEditor.prototype.restore = function() {
@@ -199,7 +230,20 @@ JSONEditor.prototype.rebuild = function(doNotRefreshText) {
 
 JSONEditor.prototype.setJsonFromText = function() {
   if (this.wrapped.get(0).value.length == 0) this.wrapped.get(0).value = "{}";
-  this.json = JSON.parse(this.wrapped.get(0).value);
+  try {
+    this.json = JSON.parse(this.wrapped.get(0).value);
+  } catch(e) {
+    alert("Got bad JSON from text.");
+  }
+};
+
+JSONEditor.prototype.checkJsonInText = function() {
+  try {
+    JSON.parse(this.wrapped.get(0).value);
+    return true;
+  } catch(e) {
+    return false;
+  }
 };
 
 JSONEditor.prototype.logJSON = function() {
