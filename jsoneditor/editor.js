@@ -11,6 +11,10 @@
   code before you make the editor, do something like this:
      JSONEditor.prototype.ADD_IMG = '/javascripts/jsoneditor/add.png';
      JSONEditor.prototype.DELETE_IMG = '/javascripts/jsoneditor/delete.png';
+  
+  You can enable or disable truncation with the following:
+    myEditor.doTruncation(false);
+    myEditor.doTruncation(true); // The default
 */
 
 function JSONEditorBase() {
@@ -19,6 +23,7 @@ function JSONEditorBase() {
   this.builderShowing = true;
   this.ADD_IMG = 'jsoneditor/add.png';
   this.DELETE_IMG = 'jsoneditor/delete.png';
+  this._doTruncation = true;
 }
 
 function JSONEditor(wrapped, width, height) {
@@ -277,20 +282,45 @@ JSONEditor.prototype.cleanBuilder = function() {
   this.wrapped.css("position", "absolute").css("top", 0).css("left", 0);        
 };
 
+JSONEditor.prototype.updateStruct = function(struct, key, val, kind) {
+  if(kind == 'key') {
+    struct[val] = struct[key];
+    if (key != val) delete struct[key];
+  } else {
+    struct[key] = val;
+  }
+};
+
+JSONEditor.prototype.getValFromStruct = function(struct, key, kind) {
+  if(kind == 'key') {
+    return key;
+  } else {
+    return struct[key];
+  }
+};
+
+JSONEditor.prototype.doTruncation = function(trueOrFalse) {
+  if (this._doTruncation != trueOrFalse) {
+    this._doTruncation = trueOrFalse;
+    this.rebuild();
+  }
+};
+
+JSONEditor.prototype.truncate = function(text, length) {
+  if(this._doTruncation && text.length > (length || 30)) return(text.substring(0, (length || 30)) + '...');
+  return text;
+};
+
 JSONEditor.prototype.edit = function(e, key, struct, kind){
   var self = this;
   var form = $("<form></form>").css('display', 'inline');
   var input = document.createElement("INPUT");
-  input.value = e.text();
+  input.value = this.getValFromStruct(struct, key, kind);
+  input.className = 'edit_field';
   var onblur = function() {
     var val = input.value;
-    if(kind == 'key') {
-      struct[val] = struct[key];
-      if (key != val) delete struct[key];
-    } else {
-      struct[key] = val;
-    }
-    e.text(val);
+    self.updateStruct(struct, key, val, kind);
+    e.text(self.truncate(val));
     e.get(0).editing = false;
     if (key != val) self.rebuild();
     return false;
@@ -303,7 +333,7 @@ JSONEditor.prototype.edit = function(e, key, struct, kind){
 
 JSONEditor.prototype.editable = function(text, key, struct, kind) {
   var self = this;
-  var elem = $('<span class="editable" href="#"></span>').text(text).click(function(e) {
+  var elem = $('<span class="editable" href="#"></span>').text(this.truncate(text)).click(function(e) {
     if (!this.editing) {
       this.editing = true;
       self.edit($(this), key, struct, kind);

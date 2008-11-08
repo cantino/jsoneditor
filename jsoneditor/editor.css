@@ -18,6 +18,14 @@
 .builder .val {
 }
 
+.builder .val .edit_field {
+  width:240px;
+}
+
+.builder .key .edit_field {
+  width:80px;
+}
+
 .builder .editable {
 }
 
