@@ -347,8 +347,8 @@ JSONEditor.prototype.build = function(json, node, parent, key) {
 
     for(var i in json){
       var innerbq = $(document.createElement("BLOCKQUOTE"));
-      innerbq.append(this.editable(i.toString(), i.toString(), json, 'key').wrap('<b class="key"></b>').parent());
-      innerbq.append(document.createTextNode(': ')); 
+      innerbq.append(this.editable(i.toString(), i.toString(), json, 'key').wrap('<span class="key"></b>').parent());
+      innerbq.append($('<span class="colon">: </span>'));
       this.build(json[i], innerbq, json, i);
       bq.append(innerbq);
     }

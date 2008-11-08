@@ -7,6 +7,20 @@
   overflow:auto;
   font-size: 0.9em;
 }
+
+.builder .key {
+  font-weight: bold;
+}
+
+.builder .colon {
+}
+
+.builder .val {
+}
+
+.builder .editable {
+}
+
 .container blockquote{
   margin:0;
   padding:0;
