@@ -231,6 +231,15 @@ JSONEditor.prototype.rebuild = function(doNotRefreshText) {
   this.setJsonFromText();
   this.alreadyFocused = false;
   this.build(this.json, this.builder);
+  this.recoverScrollPosition();
+};
+
+JSONEditor.prototype.saveScrollPosition = function() {
+  this.oldScrollHeight = this.builder.scrollTop();
+};
+
+JSONEditor.prototype.recoverScrollPosition = function() {
+  this.builder.scrollTop(this.oldScrollHeight);
 };
 
 JSONEditor.prototype.setJsonFromText = function() {
@@ -259,9 +268,9 @@ JSONEditor.prototype.cleanBuilder = function() {
   if (!this.builder) {
     this.builder = $('<div class="builder"></div>');
     this.container.append(this.builder);
-  } else {
-    this.builder.text('');
   }
+  this.saveScrollPosition();
+  this.builder.text('');
   
   this.builder.css("position", "absolute").css("top", 0).css("left", 0);
   this.builder.width(this.wrapped.width()).height(this.wrapped.height());
