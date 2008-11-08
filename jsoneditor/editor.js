@@ -7,6 +7,10 @@
   Copyright 2008
   Version 0.5
 
+  You will probably need to tell the editor where to find its add and delete images.  In your 
+  code before you make the editor, do something like this:
+     JSONEditor.prototype.ADD_IMG = '/javascripts/jsoneditor/add.png';
+     JSONEditor.prototype.DELETE_IMG = '/javascripts/jsoneditor/delete.png';
 */
 
 function JSONEditorBase() {
