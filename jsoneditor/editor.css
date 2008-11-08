@@ -1,38 +1,37 @@
-<style>
-  .container{
-    background-color:#eee;
-    position:relative;
-  }
-  .container .builder {
-    background-color:white;
-    overflow:auto;
-  }
-  .container blockquote{
-    margin:0;
-    padding:0;
-    clear:both;
-  }
-  .container div {
-    background-color:#cfc;
-    margin:1px;
-    padding:2px;
-  }
-  .container blockquote{
-    padding-left:15px;
-  }
-  .container .val{
-    font-style:italic;
-  }
-  .container .key a, .val a{
-    color:black;
-    text-decoration:none;
-  }
-  .container .icon{
-    display:block;
-    float:right;
-    text-decoration:none;
-    padding-left:5px;
-    border:0 !important;
-    color:blue;
-  }
-</style>
+.container{
+  background-color:#FFF;
+  position:relative;
+}
+.container .builder {
+  background-color:white;
+  overflow:auto;
+  font-size: 0.9em;
+}
+.container blockquote{
+  margin:0;
+  padding:0;
+  clear:both;
+}
+.container div {
+  background-color:#cfc;
+  margin:1px;
+  padding:2px;
+}
+.container blockquote{
+  padding-left:7px;
+}
+.container .val{
+  font-style:italic;
+}
+.container .key a, .val a{
+  color:black;
+  text-decoration:none;
+}
+.container .icon{
+  display:block;
+  float:right;
+  text-decoration:none;
+  padding-left:5px;
+  border:0 !important;
+  color:blue;
+}

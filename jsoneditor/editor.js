@@ -31,6 +31,7 @@ function JSONEditor(wrapped, width, height) {
   this.container = $(this.wrapped.parent());
   this.container.width(width).height(height);
   this.wrapped.width(width).height(height);
+  this.wrapped.hide();
   this.container.css("position", "relative");
   
   this.rebuild();
