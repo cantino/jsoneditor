@@ -38,6 +38,7 @@ function JSONEditor(wrapped, width, height) {
   this.wrapped.width(width).height(height);
   this.wrapped.hide();
   this.container.css("position", "relative");
+  this.doAutoFocus = false;
   this.editingUnfocused();
   
   this.rebuild();
@@ -50,6 +51,7 @@ JSONEditor.prototype.braceUI = function(key, struct) {
   var self = this;
   return $('<a class="icon" href="#"><strong>{</strong></a>').click(function(e) {
     struct[key] = { "??": struct[key] };
+    self.doAutoFocus = true;
     self.rebuild();
     return false;
   });
@@ -59,6 +61,7 @@ JSONEditor.prototype.bracketUI = function(key, struct) {
   var self = this;
   return $('<a class="icon" href="#"><strong>[</a>').click(function(e) {
     struct[key] = [ struct[key] ];
+    self.doAutoFocus = true;
     self.rebuild();
     return false;
   });
@@ -89,6 +92,7 @@ JSONEditor.prototype.deleteUI = function(key, struct, layerOnly) {
     } else {
       delete struct[key];
     }
+    self.doAutoFocus = true;
     self.rebuild();
     return false;
   });
@@ -102,6 +106,7 @@ JSONEditor.prototype.addUI = function(struct) {
     } else {
       struct['??'] = '??';
     }
+    self.doAutoFocus = true;
     self.rebuild();
     return false;
   });
@@ -310,6 +315,7 @@ JSONEditor.prototype.doTruncation = function(trueOrFalse) {
 };
 
 JSONEditor.prototype.truncate = function(text, length) {
+  if (text.length == 0) return '-empty-';
   if(this._doTruncation && text.length > (length || 30)) return(text.substring(0, (length || 30)) + '...');
   return text;
 };
@@ -350,7 +356,14 @@ JSONEditor.prototype.edit = function(e, key, struct, root, kind){
     return false;
   };
   $(input).blur(onblur);
-  $(form).submit(onblur).append(input);
+  $(input).keydown(function(e) {
+    if (e.keyCode == 9 || e.keyCode == 13) { // Tab and enter
+      self.doAutoFocus = true;
+      onblur(e);
+      return false;
+    }
+  });
+  $(form).submit(function(e) { self.doAutoFocus = true; onblur(e); return false;}).append(input);
   $(e).html(form);
   input.focus();
 };
@@ -366,8 +379,9 @@ JSONEditor.prototype.editable = function(text, key, struct, root, kind) {
   });
   
   // Auto-edit '??' keys and values.
-  if (text == '??' && !this.alreadyFocused) {
+  if (text == '??' && !this.alreadyFocused && this.doAutoFocus) {
     this.alreadyFocused = true;
+    this.doAutoFocus = false;
     elem.click();
     $(this).oneTime(100, function() { // Because JavaScript is annoying and we need to focus once the current stuff is done.
       elem.find('input').focus().select();
@@ -381,8 +395,8 @@ JSONEditor.prototype.build = function(json, node, parent, key, root) {
     var bq = $(document.createElement("BLOCKQUOTE"));
     bq.append($("<div>[</div>"));
     
-    if (parent) bq.prepend(this.deleteUI(key, parent));
     bq.prepend(this.addUI(json));
+    if (parent) bq.prepend(this.deleteUI(key, parent));
 
     for(var i = 0; i < json.length; i++) {
       var innerbq = $(document.createElement("BLOCKQUOTE"));
@@ -396,9 +410,6 @@ JSONEditor.prototype.build = function(json, node, parent, key, root) {
     var bq = $(document.createElement("BLOCKQUOTE"));
     bq.append($('<div>{</div>'));
 
-    if (parent) bq.prepend(this.deleteUI(key, parent, true));
-    bq.prepend(this.addUI(json));
-
     for(var i in json){
       var innerbq = $(document.createElement("BLOCKQUOTE"));
       innerbq.append(this.editable(i.toString(), i.toString(), json, root, 'key').wrap('<span class="key"></b>').parent());
@@ -406,13 +417,16 @@ JSONEditor.prototype.build = function(json, node, parent, key, root) {
       this.build(json[i], innerbq, json, i, root);
       bq.append(innerbq);
     }
+
+    bq.prepend(this.addUI(json));
+    if (parent) bq.prepend(this.deleteUI(key, parent, true));
     
     bq.append($('<div>}</div>'));
     node.append(bq);
   } else {
     node.append(this.editable(json.toString(), key, parent, root, 'value').wrap('<span class="val"></span>').parent());
-    if (parent) node.prepend(this.deleteUI(key, parent));
     node.prepend(this.braceUI(key, parent));
     node.prepend(this.bracketUI(key, parent));
+    if (parent) node.prepend(this.deleteUI(key, parent));
   }
 };
