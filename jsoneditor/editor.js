@@ -38,6 +38,7 @@ function JSONEditor(wrapped, width, height) {
   this.wrapped.width(width).height(height);
   this.wrapped.hide();
   this.container.css("position", "relative");
+  this.editingUnfocused();
   
   this.rebuild();
   
@@ -235,7 +236,7 @@ JSONEditor.prototype.rebuild = function(doNotRefreshText) {
   this.cleanBuilder();
   this.setJsonFromText();
   this.alreadyFocused = false;
-  this.build(this.json, this.builder);
+  this.build(this.json, this.builder, null, null, this.json);
   this.recoverScrollPosition();
 };
 
@@ -282,11 +283,13 @@ JSONEditor.prototype.cleanBuilder = function() {
   this.wrapped.css("position", "absolute").css("top", 0).css("left", 0);        
 };
 
-JSONEditor.prototype.updateStruct = function(struct, key, val, kind) {
+JSONEditor.prototype.updateStruct = function(struct, key, val, kind, selectionStart, selectionEnd) {
   if(kind == 'key') {
+    if (selectionStart && selectionEnd) val = key.substring(0, selectionStart) + val + key.substring(selectionEnd, key.length);
     struct[val] = struct[key];
     if (key != val) delete struct[key];
   } else {
+    if (selectionStart && selectionEnd) val = struct[key].substring(0, selectionStart) + val + struct[key].substring(selectionEnd, struct[key].length);
     struct[key] = val;
   }
 };
@@ -311,15 +314,36 @@ JSONEditor.prototype.truncate = function(text, length) {
   return text;
 };
 
-JSONEditor.prototype.edit = function(e, key, struct, kind){
+JSONEditor.prototype.replaceLastSelectedFieldIfRecent = function(text) {
+  if (this.lastEditingUnfocusedTime > (new Date()).getTime() - 200) { // Short delay for unfocus to occur.
+    this.setLastEditingFocus(text);
+    this.rebuild();
+  }
+};
+
+JSONEditor.prototype.editingUnfocused = function(elem, struct, key, root, kind) {
+  var self = this;
+
+  var selectionStart = elem && elem.target.selectionStart;
+  var selectionEnd = elem && elem.target.selectionEnd;
+
+  this.setLastEditingFocus = function(text) {
+    self.updateStruct(struct, key, text, kind, selectionStart, selectionEnd);
+    self.json = root; // Because self.json is a new reference due to rebuild.
+  };
+  this.lastEditingUnfocusedTime = (new Date()).getTime();
+};
+
+JSONEditor.prototype.edit = function(e, key, struct, root, kind){
   var self = this;
   var form = $("<form></form>").css('display', 'inline');
   var input = document.createElement("INPUT");
   input.value = this.getValFromStruct(struct, key, kind);
   input.className = 'edit_field';
-  var onblur = function() {
+  var onblur = function(elem) {
     var val = input.value;
     self.updateStruct(struct, key, val, kind);
+    self.editingUnfocused(elem, struct, (kind == 'key' ? val : key), root, kind);
     e.text(self.truncate(val));
     e.get(0).editing = false;
     if (key != val) self.rebuild();
@@ -331,12 +355,12 @@ JSONEditor.prototype.edit = function(e, key, struct, kind){
   input.focus();
 };
 
-JSONEditor.prototype.editable = function(text, key, struct, kind) {
+JSONEditor.prototype.editable = function(text, key, struct, root, kind) {
   var self = this;
   var elem = $('<span class="editable" href="#"></span>').text(this.truncate(text)).click(function(e) {
     if (!this.editing) {
       this.editing = true;
-      self.edit($(this), key, struct, kind);
+      self.edit($(this), key, struct, root, kind);
     }
     return true;
   });
@@ -352,7 +376,7 @@ JSONEditor.prototype.editable = function(text, key, struct, kind) {
   return elem;
 }
 
-JSONEditor.prototype.build = function(json, node, parent, key) {
+JSONEditor.prototype.build = function(json, node, parent, key, root) {
   if(json instanceof Array){
     var bq = $(document.createElement("BLOCKQUOTE"));
     bq.append($("<div>[</div>"));
@@ -362,7 +386,7 @@ JSONEditor.prototype.build = function(json, node, parent, key) {
 
     for(var i = 0; i < json.length; i++) {
       var innerbq = $(document.createElement("BLOCKQUOTE"));
-      this.build(json[i], innerbq, json, i);
+      this.build(json[i], innerbq, json, i, root);
       bq.append(innerbq);
     }
     
@@ -377,16 +401,16 @@ JSONEditor.prototype.build = function(json, node, parent, key) {
 
     for(var i in json){
       var innerbq = $(document.createElement("BLOCKQUOTE"));
-      innerbq.append(this.editable(i.toString(), i.toString(), json, 'key').wrap('<span class="key"></b>').parent());
+      innerbq.append(this.editable(i.toString(), i.toString(), json, root, 'key').wrap('<span class="key"></b>').parent());
       innerbq.append($('<span class="colon">: </span>'));
-      this.build(json[i], innerbq, json, i);
+      this.build(json[i], innerbq, json, i, root);
       bq.append(innerbq);
     }
     
     bq.append($('<div>}</div>'));
     node.append(bq);
   } else {
-    node.append(this.editable(json.toString(), key, parent, 'value').wrap('<span class="val"></span>').parent());
+    node.append(this.editable(json.toString(), key, parent, root, 'value').wrap('<span class="val"></span>').parent());
     if (parent) node.prepend(this.deleteUI(key, parent));
     node.prepend(this.braceUI(key, parent));
     node.prepend(this.bracketUI(key, parent));
