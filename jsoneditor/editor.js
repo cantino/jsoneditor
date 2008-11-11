@@ -204,6 +204,7 @@ JSONEditor.prototype.restore = function() {
 JSONEditor.prototype.saveState = function(skipStoreText) {
   if (this.json) {
     if (!skipStoreText) this.storeToText();
+    this.fireChange();
     var text = this.wrapped.get(0).value;
     if (this.history[this.historyPointer] != text) {
       this.historyTruncate();
@@ -211,6 +212,10 @@ JSONEditor.prototype.saveState = function(skipStoreText) {
       this.historyPointer += 1;
     }
   }
+};
+
+JSONEditor.prototype.fireChange = function() {
+  $(this.wrapped).trigger('change');
 };
 
 JSONEditor.prototype.historyTruncate = function() {
