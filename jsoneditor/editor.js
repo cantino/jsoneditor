@@ -204,7 +204,6 @@ JSONEditor.prototype.restore = function() {
 JSONEditor.prototype.saveState = function(skipStoreText) {
   if (this.json) {
     if (!skipStoreText) this.storeToText();
-    this.fireChange();
     var text = this.wrapped.get(0).value;
     if (this.history[this.historyPointer] != text) {
       this.historyTruncate();
@@ -240,6 +239,7 @@ JSONEditor.prototype.getJSON = function() {
 
 JSONEditor.prototype.rebuild = function(doNotRefreshText) {
   if (!this.json) this.setJsonFromText();
+  var changed = this.haveThingsChanged();
   if (this.json && !doNotRefreshText) {
     this.saveState();
   }
@@ -248,7 +248,12 @@ JSONEditor.prototype.rebuild = function(doNotRefreshText) {
   this.alreadyFocused = false;
   this.build(this.json, this.builder, null, null, this.json);
   this.recoverScrollPosition();
+  if (changed) this.fireChange();
 };
+
+JSONEditor.prototype.haveThingsChanged = function() {
+  return (this.json && JSON.stringify(this.json, null, 2) != this.wrapped.get(0).value);
+}
 
 JSONEditor.prototype.saveScrollPosition = function() {
   this.oldScrollHeight = this.builder.scrollTop();
