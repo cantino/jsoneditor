@@ -10,7 +10,7 @@
 <script language="JavaScript" type="text/javascript" src="../jsoneditor/jquery-1.2.6.js"></script>
 <script language="JavaScript" type="text/javascript" src="../jsoneditor/json2.js"></script>
 <script language="JavaScript" type="text/javascript" src="../jsoneditor/jquery.timers.js"></script>
-<script language="JavaScript" type="text/javascript" src="../jsoneditor/editor.js"></script>
+<script language="JavaScript" type="text/javascript" src="../jsoneditor/editor.js?r=346"></script>
 
 <script language="JavaScript" type="text/javascript" src="../jsunit/app/jsUnitCore.js"></script>
 
@@ -31,9 +31,19 @@
     assertEquals(j.getJSONText(), '{}');
     assertEquals(typeof j.getJSON(), 'object');
   }
-  
-  
 
+  function testSettingJsonFromText() {
+    var j = new JSONEditor($("#t_empty1"));
+    j.wrapped.get(0).value = '{"hello": "world"}';
+    j.setJsonFromText();
+    assertEquals(j.json['hello'], "world");
+  }
+  
+  function testFixingOfReturnAndTabInText() {
+    var j = new JSONEditor($("#t_returns_and_tabs"));
+    assertEquals(j.json['hello'], 'wo\\nr\\tld');
+    assertEquals(j.json['how'], 'g\\noe\\ts?');
+  }
 </script>
   </head>
 
@@ -59,6 +69,7 @@
   
   <textarea id="t_empty1">{}</textarea>
   <textarea id="t_empty2">{}</textarea>
+  <textarea id="t_returns_and_tabs">{"hello": "wo\nr\tld", "how": "g\\noe\\\ts?"}</textarea>
 
   <script>
   </script>

@@ -266,6 +266,7 @@ JSONEditor.prototype.recoverScrollPosition = function() {
 JSONEditor.prototype.setJsonFromText = function() {
   if (this.wrapped.get(0).value.length == 0) this.wrapped.get(0).value = "{}";
   try {
+    this.wrapped.get(0).value = this.wrapped.get(0).value.replace(/(^|[^\\])(\\\\)*\\n/g, '$1\\\\n').replace(/(^|[^\\])(\\\\)*\\t/g, '$1\\\\t');
     this.json = JSON.parse(this.wrapped.get(0).value);
   } catch(e) {
     alert("Got bad JSON from text.");
@@ -355,6 +356,7 @@ JSONEditor.prototype.edit = function(e, key, struct, root, kind){
   var form = $("<form></form>").css('display', 'inline');
   var input = document.createElement("INPUT");
   input.value = this.getValFromStruct(struct, key, kind);
+  //alert(this.getValFromStruct(struct, key, kind));
   input.className = 'edit_field';
   var onblur = function(elem) {
     var val = input.value;
