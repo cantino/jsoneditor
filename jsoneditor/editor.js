@@ -266,7 +266,7 @@ JSONEditor.prototype.recoverScrollPosition = function() {
 JSONEditor.prototype.setJsonFromText = function() {
   if (this.wrapped.get(0).value.length == 0) this.wrapped.get(0).value = "{}";
   try {
-    this.wrapped.get(0).value = this.wrapped.get(0).value.replace(/(^|[^\\])(\\\\)*\\n/g, '$1\\\\n').replace(/(^|[^\\])(\\\\)*\\t/g, '$1\\\\t');
+    this.wrapped.get(0).value = this.wrapped.get(0).value.replace(/((^|[^\\])(\\\\)*)\\n/g, '$1\\\\n').replace(/((^|[^\\])(\\\\)*)\\t/g, '$1\\\\t');
     this.json = JSON.parse(this.wrapped.get(0).value);
   } catch(e) {
     alert("Got bad JSON from text.");

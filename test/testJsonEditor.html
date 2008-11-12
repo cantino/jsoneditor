@@ -10,7 +10,7 @@
 <script language="JavaScript" type="text/javascript" src="../jsoneditor/jquery-1.2.6.js"></script>
 <script language="JavaScript" type="text/javascript" src="../jsoneditor/json2.js"></script>
 <script language="JavaScript" type="text/javascript" src="../jsoneditor/jquery.timers.js"></script>
-<script language="JavaScript" type="text/javascript" src="../jsoneditor/editor.js?r=346"></script>
+<script language="JavaScript" type="text/javascript" src="../jsoneditor/editor.js?r=1"></script>
 
 <script language="JavaScript" type="text/javascript" src="../jsunit/app/jsUnitCore.js"></script>
 
@@ -42,7 +42,7 @@
   function testFixingOfReturnAndTabInText() {
     var j = new JSONEditor($("#t_returns_and_tabs"));
     assertEquals(j.json['hello'], 'wo\\nr\\tld');
-    assertEquals(j.json['how'], 'g\\noe\\ts?');
+    assertEquals(j.json['how'], 'g\\noe\\\\ts?');
   }
 </script>
   </head>
