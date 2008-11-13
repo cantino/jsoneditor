@@ -172,10 +172,12 @@ JSONEditor.prototype.showFunctionButtons = function() {
       self.toggleBuilder();
       return false;
     }).text('Toggle View'));
-    this.functionButtons.css("position", "absolute");
-    this.functionButtons.css("top", this.wrapped.height() + 5);
-    this.container.append(this.functionButtons);
+    this.container.prepend(this.functionButtons);
     this.container.height(this.container.height() + this.functionButtons.height() + 5);
+  }
+  if (this.functionButtons) {
+    this.wrapped.css('top', this.functionButtons.height() + 5 + 'px');
+    this.builder.css('top', this.functionButtons.height() + 5 + 'px');
   }
 };
 
@@ -297,7 +299,8 @@ JSONEditor.prototype.cleanBuilder = function() {
   
   this.builder.css("position", "absolute").css("top", 0).css("left", 0);
   this.builder.width(this.wrapped.width()).height(this.wrapped.height());
-  this.wrapped.css("position", "absolute").css("top", 0).css("left", 0);        
+  this.wrapped.css("position", "absolute").css("top", 0).css("left", 0);
+  this.showFunctionButtons();
 };
 
 JSONEditor.prototype.updateStruct = function(struct, key, val, kind, selectionStart, selectionEnd) {
