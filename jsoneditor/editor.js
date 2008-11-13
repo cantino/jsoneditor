@@ -67,32 +67,33 @@ JSONEditor.prototype.bracketUI = function(key, struct) {
   });
 };
 
-JSONEditor.prototype.deleteUI = function(key, struct, layerOnly) {
+JSONEditor.prototype.deleteUI = function(key, struct, fullDelete) {
   var self = this;
   return $('<a class="icon" href="#"><img src="' + this.DELETE_IMG + '" border=0/></a>').click(function(e) {
-    var didSomething = false;
-    if (struct[key] instanceof Array) {
-      if(struct[key].length > 0) {
-        struct[key] = struct[key][0];
-        didSomething = true;
+    if (!fullDelete) {
+      var didSomething = false;
+      if (struct[key] instanceof Array) {
+        if(struct[key].length > 0) {
+          struct[key] = struct[key][0];
+          didSomething = true;
+        }
+      } else if (struct[key] instanceof Object) {
+        for (var i in struct[key]) {
+          struct[key] = struct[key][i];
+          didSomething = true;
+          break;
+        }
       }
-    } else if (struct[key] instanceof Object) {
-      for (var i in struct[key]) {
-        struct[key] = struct[key][i];
-        didSomething = true;
-        break;
+      if (didSomething) {
+        self.rebuild();
+        return false;
       }
-    }
-    if (didSomething) {
-      self.rebuild();
-      return false;
     }
     if (struct instanceof Array) {
       struct.splice(key, 1);
     } else {
       delete struct[key];
     }
-    self.doAutoFocus = true;
     self.rebuild();
     return false;
   });
@@ -425,13 +426,18 @@ JSONEditor.prototype.build = function(json, node, parent, key, root) {
     for(var i in json){
       var innerbq = $(document.createElement("BLOCKQUOTE"));
       innerbq.append(this.editable(i.toString(), i.toString(), json, root, 'key').wrap('<span class="key"></b>').parent());
+      if (typeof json[i] != 'string') {
+        innerbq.prepend(this.braceUI(i, json));
+        innerbq.prepend(this.bracketUI(i, json));
+        innerbq.prepend(this.deleteUI(i, json, true));
+      }
       innerbq.append($('<span class="colon">: </span>'));
       this.build(json[i], innerbq, json, i, root);
       bq.append(innerbq);
     }
 
     bq.prepend(this.addUI(json));
-    if (parent) bq.prepend(this.deleteUI(key, parent, true));
+    if (parent) bq.prepend(this.deleteUI(key, parent));
     
     bq.append($('<div>}</div>'));
     node.append(bq);
