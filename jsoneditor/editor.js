@@ -4,7 +4,7 @@
   by
     Andrew Cantino
     Kyle Maxwell
-  Copyright 2008
+  Copyright 2009
   Version 0.5
 
   You will probably need to tell the editor where to find its add and delete images.  In your 
@@ -12,7 +12,7 @@
      JSONEditor.prototype.ADD_IMG = '/javascripts/jsoneditor/add.png';
      JSONEditor.prototype.DELETE_IMG = '/javascripts/jsoneditor/delete.png';
   
-  You can enable or disable truncation with the following:
+  You can enable or disable visual truncation in the structure editor with the following:
     myEditor.doTruncation(false);
     myEditor.doTruncation(true); // The default
 */

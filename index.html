@@ -10,22 +10,22 @@
       // Setup control buttons at bottom.
       
       $(document).ready(function(){
+        JSONEditor.prototype.ADD_IMG = 'jsoneditor/add.png';
+        JSONEditor.prototype.DELETE_IMG = 'jsoneditor/delete.png';
         var j = new JSONEditor($("#t"), 400, 300);
         j.doTruncation(true);
-        
         j.showFunctionButtons();
       });
     </script>
   </head>
   <body>
 <textarea id="t">{
-  "name": "a.title",
-  "description": "foo.bar",
-  "authors": [{
-    "name": "p.foo",
-    "link": "a | @href",
+  "names": ["andy", "ben", "sam"],
+  "some_object": {
+    "foo": "bar",
+    "baz": [{ "woah": "there"}],
     "long_line": "a b c d e f g h i j | a b c d e f g h i j | match(/dflkjdfkjhdfkjhdf/) | dfjkhsdfh | a b c d e f g h i j"
-  }]
+  }
 }
     </textarea>
   </body>  
