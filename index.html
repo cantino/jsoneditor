@@ -1,10 +1,8 @@
 <html>
   <head>
-    <link href="jsoneditor/editor.css" rel="stylesheet" type="text/css" />
-    <script type="text/javascript" src="jsoneditor/jquery-1.2.6.js"></script>
-    <script type="text/javascript" src="jsoneditor/json2.js"></script>
-    <script type="text/javascript" src="jsoneditor/jquery.timers.js"></script>
-    <script type="text/javascript" src="jsoneditor/editor.js"></script>
+    <link href="jsoneditor/jquery.json-editor.css" rel="stylesheet" type="text/css" />
+    <script type="text/javascript" src="jsoneditor/jquery-1.4.2.js"></script>
+    <script type="text/javascript" src="jsoneditor/jquery.json-editor.js"></script>
     
     <script>
       // Setup control buttons at bottom.
@@ -12,7 +10,7 @@
       $(document).ready(function(){
         JSONEditor.prototype.ADD_IMG = 'jsoneditor/add.png';
         JSONEditor.prototype.DELETE_IMG = 'jsoneditor/delete.png';
-        var j = new JSONEditor($("#t"), 400, 300);
+        var j = new JSONEditor($("#t"), 400, 400);
         j.doTruncation(true);
         j.showFunctionButtons();
       });
