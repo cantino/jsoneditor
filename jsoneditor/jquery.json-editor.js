@@ -38,6 +38,7 @@ function JSONEditorBase() {
   this.builderShowing = true;
   this.ADD_IMG = 'jsoneditor/add.png';
   this.DELETE_IMG = 'jsoneditor/delete.png';
+  this.functionButtonsEnabled = false;
   this._doTruncation = true;
 }
 
@@ -57,6 +58,12 @@ function JSONEditor(wrapped, width, height) {
   this.editingUnfocused();
   
   this.rebuild();
+  this.container.filter(':not(.processed)').TextAreaResizer();
+  self = this;
+  this.container.focus(function(){
+  	$(this).children('textarea').height(self.container.height() - self.functionButtons.height() - 5);
+  	$(this).children('.builder').height(self.container.height() - self.functionButtons.height() - 10);
+  });
   
   return this;
 }
@@ -84,7 +91,7 @@ JSONEditor.prototype.bracketUI = function(key, struct) {
 
 JSONEditor.prototype.deleteUI = function(key, struct, fullDelete) {
   var self = this;
-  return $('<a class="icon" href="#"><img src="' + this.DELETE_IMG + '" border=0/></a>').click(function(e) {
+  return $('<a class="icon" href="#" title="delete"><img src="' + this.DELETE_IMG + '" border=0/></a>').click(function(e) {
     if (!fullDelete) {
       var didSomething = false;
       if (struct[key] instanceof Array) {
@@ -114,9 +121,22 @@ JSONEditor.prototype.deleteUI = function(key, struct, fullDelete) {
   });
 };
 
+JSONEditor.prototype.wipeUI = function(key, struct) {
+  var self = this;
+  return $('<a class="icon" href="#" title="wipe"><strong>W</strong></a>').click(function(e) {
+    if (struct instanceof Array) {
+      struct.splice(key, 1);
+    } else {
+      delete struct[key];
+    }
+    self.rebuild();
+    return false;
+  });
+};
+
 JSONEditor.prototype.addUI = function(struct) {
   var self = this;
-  return $('<a class="icon" href="#"><img src="' + this.ADD_IMG + '" border=0/></a>').click(function(e) {
+  return $('<a class="icon" href="#" title="add"><img src="' + this.ADD_IMG + '" border=0/></a>').click(function(e) {
     if (struct instanceof Array) {
       struct.push('??');
     } else {
@@ -148,8 +168,8 @@ JSONEditor.prototype.showBuilder = function() {
   if (this.checkJsonInText()) {
     this.setJsonFromText();
     this.rebuild();
-    this.builder.show();
     this.wrapped.hide();
+    this.builder.show();
     return true;
   } else {
     alert("Sorry, there appears to be an error in your JSON input.  Please fix it before continuing.");
@@ -173,8 +193,9 @@ JSONEditor.prototype.toggleBuilder = function() {
     }
 };
 
-JSONEditor.prototype.showFunctionButtons = function() {
-  if (!this.functionButtons) {
+JSONEditor.prototype.showFunctionButtons = function(insider) {
+  if (!insider) this.functionButtonsEnabled = true;
+  if (this.functionButtonsEnabled) if (!this.functionButtons) {
     this.functionButtons = $('<div class="function_buttons"></div>');
     var self = this;
     this.functionButtons.append($('<a href="#" style="padding-right: 10px;"></a>').click(function() {
@@ -183,10 +204,10 @@ JSONEditor.prototype.showFunctionButtons = function() {
     }).text('Undo')).append($('<a href="#" style="padding-right: 10px;"></a>').click(function() {
       self.redo();
       return false;
-    }).text('Redo')).append($('<a href="#" style="padding-right: 10px;"></a>').click(function() {
+    }).text('Redo')).append($('<a id="toggle_view" href="#" style="padding-right: 10px;"></a>').click(function() {
       self.toggleBuilder();
       return false;
-    }).text('Toggle View'));
+    }).text('Toggle View').css("float", "right"));
     this.container.prepend(this.functionButtons);
     this.container.height(this.container.height() + this.functionButtons.height() + 5);
   }
@@ -264,8 +285,21 @@ JSONEditor.prototype.rebuild = function(doNotRefreshText) {
   this.cleanBuilder();
   this.setJsonFromText();
   this.alreadyFocused = false;
-  this.build(this.json, this.builder, null, null, this.json);
+  var elem = this.build(this.json, this.builder, null, null, this.json);
+
   this.recoverScrollPosition();
+
+  // Auto-focus to edit '??' keys and values.
+  if (elem) if (elem.text() == '??' && !this.alreadyFocused && this.doAutoFocus) {
+    this.alreadyFocused = true;
+    this.doAutoFocus = false;
+    
+    elem = elem.find('.editable');
+    elem.click();
+    elem.find('input').focus().select();
+    //still missing a proper scrolling into the selected input
+  }
+  
   if (changed) this.fireChange();
 };
 
@@ -315,7 +349,7 @@ JSONEditor.prototype.cleanBuilder = function() {
   this.builder.css("position", "absolute").css("top", 0).css("left", 0);
   this.builder.width(this.wrapped.width()).height(this.wrapped.height());
   this.wrapped.css("position", "absolute").css("top", 0).css("left", 0);
-  this.showFunctionButtons();
+  this.showFunctionButtons("defined");
 };
 
 JSONEditor.prototype.updateStruct = function(struct, key, val, kind, selectionStart, selectionEnd) {
@@ -408,61 +442,140 @@ JSONEditor.prototype.editable = function(text, key, struct, root, kind) {
     }
     return true;
   });
-  
-  // Auto-edit '??' keys and values.
-  if (text == '??' && !this.alreadyFocused && this.doAutoFocus) {
-    this.alreadyFocused = true;
-    this.doAutoFocus = false;
-    elem.click();
-    $(this).oneTime(100, function() { // Because JavaScript is annoying and we need to focus once the current stuff is done.
-      elem.find('input').focus().select();
-    });
-  }
+
   return elem;
 }
 
 JSONEditor.prototype.build = function(json, node, parent, key, root) {
+  var elem = null;
   if(json instanceof Array){
     var bq = $(document.createElement("BLOCKQUOTE"));
-    bq.append($("<div>[</div>"));
+    bq.append($('<div class="open brackets">[</div>'));
     
     bq.prepend(this.addUI(json));
-    if (parent) bq.prepend(this.deleteUI(key, parent));
+    if (parent) {
+    	bq.prepend(this.wipeUI(key, parent));
+    	bq.prepend(this.deleteUI(key, parent));
+    }
 
     for(var i = 0; i < json.length; i++) {
       var innerbq = $(document.createElement("BLOCKQUOTE"));
-      this.build(json[i], innerbq, json, i, root);
+      var newElem = this.build(json[i], innerbq, json, i, root);
+      if (newElem) if (newElem.text() == "??") elem = newElem;
       bq.append(innerbq);
     }
     
-    bq.append($("<div>]</div>"));
+    bq.append($('<div class="close brackets">]</div>'));
     node.append(bq);
   } else if (json instanceof Object) {
     var bq = $(document.createElement("BLOCKQUOTE"));
-    bq.append($('<div>{</div>'));
+    bq.append($('<div class="open bracers">{</div>'));
 
     for(var i in json){
       var innerbq = $(document.createElement("BLOCKQUOTE"));
-      innerbq.append(this.editable(i.toString(), i.toString(), json, root, 'key').wrap('<span class="key"></b>').parent());
+      var newElem = this.editable(i.toString(), i.toString(), json, root, 'key').wrap('<span class="key"></b>').parent();
+      innerbq.append(newElem);
+      if (newElem) if (newElem.text() == "??") elem = newElem;
       if (typeof json[i] != 'string') {
         innerbq.prepend(this.braceUI(i, json));
         innerbq.prepend(this.bracketUI(i, json));
+	    innerbq.prepend(this.wipeUI(i, json));
         innerbq.prepend(this.deleteUI(i, json, true));
       }
       innerbq.append($('<span class="colon">: </span>'));
-      this.build(json[i], innerbq, json, i, root);
+      newElem = this.build(json[i], innerbq, json, i, root);
+      if (newElem) if (newElem.text() == "??") elem = newElem;
       bq.append(innerbq);
     }
 
     bq.prepend(this.addUI(json));
-    if (parent) bq.prepend(this.deleteUI(key, parent));
+    if (parent) {
+	    bq.prepend(this.wipeUI(key, parent));
+    	bq.prepend(this.deleteUI(key, parent));
+    }
     
-    bq.append($('<div>}</div>'));
+    bq.append($('<div class="close bracers">}</div>'));
     node.append(bq);
   } else {
-    node.append(this.editable(json.toString(), key, parent, root, 'value').wrap('<span class="val"></span>').parent());
+    elem = this.editable(json.toString(), key, parent, root, 'value').wrap('<span class="val"></span>').parent();
+    node.append(elem);
     node.prepend(this.braceUI(key, parent));
     node.prepend(this.bracketUI(key, parent));
-    if (parent) node.prepend(this.deleteUI(key, parent));
+    if (parent) {
+	    node.prepend(this.wipeUI(key, parent));
+    	node.prepend(this.deleteUI(key, parent));
+    }
+
   }
+  return elem;
 };
+
+
+/* 
+	jQuery TextAreaResizer plugin
+	Created on 17th January 2008 by Ryan O'Dell 
+	Version 1.0.4
+
+	Found source: http://plugins.jquery.com/misc/textarea.js
+*/
+(function($) {
+	/* private variable "oHover" used to determine if you're still hovering over the same element */
+	var textarea, staticOffset;  // added the var declaration for 'staticOffset' thanks to issue logged by dec.
+	var iLastMousePos = 0;
+	var iMin = 32;
+	var grip;
+	/* TextAreaResizer plugin */
+	$.fn.TextAreaResizer = function() {
+		return this.each(function() {
+		    textarea = $(this).addClass('processed'), staticOffset = null;
+
+			// 18-01-08 jQuery bind to pass data element rather than direct mousedown - Ryan O'Dell
+		    // When wrapping the text area, work around an IE margin bug.  See:
+		    // http://jaspan.com/ie-inherited-margin-bug-form-elements-and-haslayout
+		    $(this).wrap('<div class="resizable-textarea"><span></span></div>')
+		      .parent().append($('<div class="grippie"></div>').bind("mousedown",{el: this} , startDrag));
+
+		    var grippie = $('div.grippie', $(this).parent())[0];
+		    grippie.style.marginRight = (grippie.offsetWidth - $(this)[0].offsetWidth) +'px';
+
+		});
+	};
+	/* private functions */
+	function startDrag(e) {
+		textarea = $(e.data.el);
+		textarea.blur();
+		iLastMousePos = mousePosition(e).y;
+		staticOffset = textarea.height() - iLastMousePos;
+		textarea.css('opacity', 0.25);
+		$(document).mousemove(performDrag).mouseup(endDrag);
+		return false;
+	}
+
+	function performDrag(e) {
+		var iThisMousePos = mousePosition(e).y;
+		var iMousePos = staticOffset + iThisMousePos;
+		if (iLastMousePos >= (iThisMousePos)) {
+			iMousePos -= 5;
+		}
+		iLastMousePos = iThisMousePos;
+		iMousePos = Math.max(iMin, iMousePos);
+		textarea.height(iMousePos + 'px');
+		if (iMousePos < iMin) {
+			endDrag(e);
+		}
+		return false;
+	}
+
+	function endDrag(e) {
+		$(document).unbind('mousemove', performDrag).unbind('mouseup', endDrag);
+		textarea.css('opacity', 1);
+		textarea.focus();
+		textarea = null;
+		staticOffset = null;
+		iLastMousePos = 0;
+	}
+
+	function mousePosition(e) {
+		return { x: e.clientX + document.documentElement.scrollLeft, y: e.clientY + document.documentElement.scrollTop };
+	};
+})(jQuery);
