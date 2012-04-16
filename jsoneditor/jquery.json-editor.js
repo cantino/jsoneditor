@@ -33,8 +33,6 @@
 */
 
 function JSONEditorBase() {
-  this.history = [];
-  this.historyPointer = -1;
   this.builderShowing = true;
   this.ADD_IMG = 'jsoneditor/add.png';
   this.DELETE_IMG = 'jsoneditor/delete.png';
@@ -43,6 +41,8 @@ function JSONEditorBase() {
 }
 
 function JSONEditor(wrapped, width, height) {
+  this.history = [];
+  this.historyPointer = -1;
   if (wrapped == null || (wrapped.get && wrapped.get(0) == null)) throw "Must provide an element to wrap.";
   var width = width || 600;
   var height = height || 300;
