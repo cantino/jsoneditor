@@ -356,6 +356,22 @@ JSONEditor.prototype.updateStruct = function(struct, key, val, kind, selectionSt
   if(kind == 'key') {
     if (selectionStart && selectionEnd) val = key.substring(0, selectionStart) + val + key.substring(selectionEnd, key.length);
     struct[val] = struct[key];
+    
+    		//order keys
+		var orderrest = 0;
+		$.each(struct, function (index, value) {
+			//re set rest of the keys
+			if(orderrest & index != val) {
+				var tempval = struct[index];
+				delete struct[index];
+				struct[index] = tempval;
+			}
+			if(key == index) {
+				orderrest = 1;
+			}
+		});
+		// end of order keys
+    
     if (key != val) delete struct[key];
   } else {
     if (selectionStart && selectionEnd) val = struct[key].substring(0, selectionStart) + val + struct[key].substring(selectionEnd, struct[key].length);
