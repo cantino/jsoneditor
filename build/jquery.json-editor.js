@@ -31,27 +31,30 @@
   You can enable or disable visual truncation in the structure editor with the following:
     myEditor.doTruncation(false);
     myEditor.doTruncation(true); // The default
+
+  You can show a 'w'ipe button that does a more aggressive delete by calling showWipe(true|false) or by passing in 'showWipe: true'.
 */
 
 
-function JSONEditorBase() {
+function JSONEditorBase(options) {
+  if (!options) options = {};
   this.builderShowing = true;
-  this.ADD_IMG = 'jsoneditor/add.png';
-  this.DELETE_IMG = 'jsoneditor/delete.png';
+  this.ADD_IMG = options.ADD_IMG || 'lib/images/add.png';
+  this.DELETE_IMG = options.DELETE_IMG || 'lib/images/delete.png';
   this.functionButtonsEnabled = false;
   this._doTruncation = true;
+  this._showWipe = options.showWipe;
 }
 
 function JSONEditor(wrapped, width, height) {
   this.history = [];
   this.historyPointer = -1;
-  console.log(wrapped);
   if (wrapped == null || (wrapped.get && wrapped.get(0) == null)) throw "Must provide an element to wrap.";
   var width = width || 600;
   var height = height || 300;
   this.wrapped = $(wrapped);
 
-  this.wrapped.wrap('<div class="container"></div>');
+  this.wrapped.wrap('<div class="json-editor"></div>');
   this.container = $(this.wrapped.parent());
   this.container.width(width).height(height);
   this.wrapped.width(width).height(height);
@@ -61,8 +64,7 @@ function JSONEditor(wrapped, width, height) {
   this.editingUnfocused();
 
   this.rebuild();
-  this.container.filter(':not(.processed)').TextAreaResizer();
-  self = this;
+  var self = this;
   this.container.focus(function(){
   	$(this).children('textarea').height(self.container.height() - self.functionButtons.height() - 5);
   	$(this).children('.builder').height(self.container.height() - self.functionButtons.height() - 10);
@@ -397,6 +399,13 @@ JSONEditor.prototype.doTruncation = function(trueOrFalse) {
   }
 };
 
+JSONEditor.prototype.showWipe = function(trueOrFalse) {
+  if (this._showWipe != trueOrFalse) {
+    this._showWipe = trueOrFalse;
+    this.rebuild();
+  }
+};
+
 JSONEditor.prototype.truncate = function(text, length) {
   if (text.length == 0) return '-empty-';
   if(this._doTruncation && text.length > (length || 30)) return(text.substring(0, (length || 30)) + '...');
@@ -469,11 +478,11 @@ JSONEditor.prototype.build = function(json, node, parent, key, root) {
   var elem = null;
   if(json instanceof Array){
     var bq = $(document.createElement("BLOCKQUOTE"));
-    bq.append($('<div class="open brackets">[</div>'));
+    bq.append($('<div class="brackets">[</div>'));
 
     bq.prepend(this.addUI(json));
     if (parent) {
-    	bq.prepend(this.wipeUI(key, parent));
+      if (this._showWipe) bq.prepend(this.wipeUI(key, parent));
     	bq.prepend(this.deleteUI(key, parent));
     }
 
@@ -484,11 +493,11 @@ JSONEditor.prototype.build = function(json, node, parent, key, root) {
       bq.append(innerbq);
     }
 
-    bq.append($('<div class="close brackets">]</div>'));
+    bq.append($('<div class="brackets">]</div>'));
     node.append(bq);
   } else if (json instanceof Object) {
     var bq = $(document.createElement("BLOCKQUOTE"));
-    bq.append($('<div class="open bracers">{</div>'));
+    bq.append($('<div class="bracers">{</div>'));
 
     for(var i in json){
       var innerbq = $(document.createElement("BLOCKQUOTE"));
@@ -498,7 +507,7 @@ JSONEditor.prototype.build = function(json, node, parent, key, root) {
       if (typeof json[i] != 'string') {
         innerbq.prepend(this.braceUI(i, json));
         innerbq.prepend(this.bracketUI(i, json));
-	    innerbq.prepend(this.wipeUI(i, json));
+        if (this._showWipe) innerbq.prepend(this.wipeUI(i, json));
         innerbq.prepend(this.deleteUI(i, json, true));
       }
       innerbq.append($('<span class="colon">: </span>'));
@@ -509,11 +518,11 @@ JSONEditor.prototype.build = function(json, node, parent, key, root) {
 
     bq.prepend(this.addUI(json));
     if (parent) {
-	    bq.prepend(this.wipeUI(key, parent));
+      if (this._showWipe) bq.prepend(this.wipeUI(key, parent));
     	bq.prepend(this.deleteUI(key, parent));
     }
 
-    bq.append($('<div class="close bracers">}</div>'));
+    bq.append($('<div class="bracers">}</div>'));
     node.append(bq);
   } else {
     elem = this.editable(json.toString(), key, parent, root, 'value').wrap('<span class="val"></span>').parent();
@@ -521,80 +530,10 @@ JSONEditor.prototype.build = function(json, node, parent, key, root) {
     node.prepend(this.braceUI(key, parent));
     node.prepend(this.bracketUI(key, parent));
     if (parent) {
-	    node.prepend(this.wipeUI(key, parent));
+      if (this._showWipe) node.prepend(this.wipeUI(key, parent));
     	node.prepend(this.deleteUI(key, parent));
     }
 
   }
   return elem;
 };
-
-
-/*
-	jQuery TextAreaResizer plugin
-	Created on 17th January 2008 by Ryan O'Dell
-	Version 1.0.4
-
-	Found source: http://plugins.jquery.com/misc/textarea.js
-*/
-(function($) {
-	/* private variable "oHover" used to determine if you're still hovering over the same element */
-	var textarea, staticOffset;  // added the var declaration for 'staticOffset' thanks to issue logged by dec.
-	var iLastMousePos = 0;
-	var iMin = 32;
-	var grip;
-	/* TextAreaResizer plugin */
-	$.fn.TextAreaResizer = function() {
-		return this.each(function() {
-		    textarea = $(this).addClass('processed'), staticOffset = null;
-
-			// 18-01-08 jQuery bind to pass data element rather than direct mousedown - Ryan O'Dell
-		    // When wrapping the text area, work around an IE margin bug.  See:
-		    // http://jaspan.com/ie-inherited-margin-bug-form-elements-and-haslayout
-		    $(this).wrap('<div class="resizable-textarea"><span></span></div>')
-		      .parent().append($('<div class="grippie"></div>').bind("mousedown",{el: this} , startDrag));
-
-		    var grippie = $('div.grippie', $(this).parent())[0];
-		    grippie.style.marginRight = (grippie.offsetWidth - $(this)[0].offsetWidth) +'px';
-
-		});
-	};
-	/* private functions */
-	function startDrag(e) {
-		textarea = $(e.data.el);
-		textarea.blur();
-		iLastMousePos = mousePosition(e).y;
-		staticOffset = textarea.height() - iLastMousePos;
-		textarea.css('opacity', 0.25);
-		$(document).mousemove(performDrag).mouseup(endDrag);
-		return false;
-	}
-
-	function performDrag(e) {
-		var iThisMousePos = mousePosition(e).y;
-		var iMousePos = staticOffset + iThisMousePos;
-		if (iLastMousePos >= (iThisMousePos)) {
-			iMousePos -= 5;
-		}
-		iLastMousePos = iThisMousePos;
-		iMousePos = Math.max(iMin, iMousePos);
-		textarea.height(iMousePos + 'px');
-		if (iMousePos < iMin) {
-			endDrag(e);
-		}
-		return false;
-	}
-
-	function endDrag(e) {
-		$(document).unbind('mousemove', performDrag).unbind('mouseup', endDrag);
-		textarea.css('opacity', 1);
-		textarea.focus();
-		textarea = null;
-		staticOffset = null;
-		iLastMousePos = 0;
-	}
-
-	function mousePosition(e) {
-		return { x: e.clientX + document.documentElement.scrollLeft, y: e.clientY + document.documentElement.scrollTop };
-	};
-})(jQuery);
