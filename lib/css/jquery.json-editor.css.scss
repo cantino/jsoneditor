@@ -1,0 +1,78 @@
+div.grippie {
+  background:#EEEEEE url(../jsoneditor/grippie.png) no-repeat scroll center 2px;
+  border-color:#DDDDDD;
+  border-style:solid;
+  border-width:0pt 1px 1px;
+  cursor:s-resize;
+  height:9px;
+  overflow:hidden;
+}
+.resizable-textarea textarea {
+  display:block;
+  margin-bottom:0pt;
+  width:95%;
+  height: 20%;
+}
+
+.container {
+  background-color:#FFF;
+  position:relative;
+
+  .builder {
+    background-color:white;
+    overflow:auto;
+    font-size: 0.9em;
+
+    .key {
+      font-weight: bold;
+
+      .edit_field {
+        width:80px;
+      }
+    }
+
+    .colon {}
+
+    .val {
+      .edit_field {
+        width:180px;
+      }
+    }
+
+    .editable {
+
+    }
+  }
+
+  blockquote{
+    margin:0;
+    padding:0;
+    clear:both;
+    padding-left:7px;
+  }
+
+  div {
+    background-color:#cfc;
+    margin:1px;
+    padding:2px;
+  }
+
+  .val {
+    font-style:italic;
+  }
+
+  .key a, .val a {
+    color:black;
+    text-decoration:none;
+  }
+
+  .icon {
+    display:block;
+    float:right;
+    text-decoration:none;
+    padding-left:5px;
+    border:0 !important;
+    color:blue;
+  }
+}
+
