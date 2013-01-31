@@ -2,4 +2,8 @@ This is an open-source JavaScript widget for editing JSON data structures.  Feat
 
 To develop with automatic scss and coffeescript compilation, do `bundle` and then `bundle exec guard`
 
+The new CoffeeScript version is coming soon.
+
 Feel free to send patches!
+
+Live demo: http://iterationprojects.com/jsoneditor/example.html
