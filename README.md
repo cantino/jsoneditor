@@ -6,4 +6,4 @@ The new CoffeeScript version is coming soon.
 
 Feel free to send patches!
 
-Live demo: http://iterationprojects.com/jsoneditor/example.html
+Live demo: http://andrewcantino.com/examples/jsoneditor/example.html
