@@ -14,7 +14,7 @@ describe "basic functionality", ->
 
       <textarea id="t_empty1">{}</textarea>
       <textarea id="t_empty2">{}</textarea>
-      <textarea id="t_returns_and_tabs">{"hello": "wo\nr\tld", "how": "g\\noe\\\ts?"}</textarea>
+      <textarea id="t_returns_and_tabs">{"hello": "wo\\nr\\tld"}</textarea>
     """
 
   it "should load from a text area", ->
@@ -40,4 +40,3 @@ describe "basic functionality", ->
   it "should allow return and tab in text", ->
     j = new JSONEditor($("#t_returns_and_tabs"))
     expect(j.json['hello']).toEqual 'wo\\nr\\tld'
-    expect(j.json['how']).toEqual 'g\\noe\\\\ts?'

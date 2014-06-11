@@ -1,6 +1,6 @@
 beforeEach ->
   jQuery.fx.off = true
-  jQuery('#jasmine-content').empty()
+  jQuery('#jasmine_content').empty()
   jasmine.Clock.useMock()
 
   jQuery.ajaxSettings.xhr = ->
@@ -8,7 +8,3 @@ beforeEach ->
 
 afterEach ->
   jasmine.Clock.reset()
-
-  # Clear any jQuery live event bindings
-  events = jQuery.data(document, "events")
-  delete events[prop] for prop of events

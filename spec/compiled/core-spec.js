@@ -2,7 +2,7 @@
 
   describe("basic functionality", function() {
     beforeEach(function() {
-      return $("#jasmine_content").html("<textarea id=\"t\">\n  {\n    \"name\": \"a.title\",\n    \"description\": \"foo.bar\",\n    \"authors\": [{\n      \"name\": \"p.foo\",\n      \"link\": \"a | @href\"\n    }]\n  }\n</textarea>\n\n<textarea id=\"t_empty1\">{}</textarea>\n<textarea id=\"t_empty2\">{}</textarea>\n<textarea id=\"t_returns_and_tabs\">{\"hello\": \"wo\nr\tld\", \"how\": \"g\\noe\\\ts?\"}</textarea>");
+      return $("#jasmine_content").html("<textarea id=\"t\">\n  {\n    \"name\": \"a.title\",\n    \"description\": \"foo.bar\",\n    \"authors\": [{\n      \"name\": \"p.foo\",\n      \"link\": \"a | @href\"\n    }]\n  }\n</textarea>\n\n<textarea id=\"t_empty1\">{}</textarea>\n<textarea id=\"t_empty2\">{}</textarea>\n<textarea id=\"t_returns_and_tabs\">{\"hello\": \"wo\\nr\\tld\"}</textarea>");
     });
     it("should load from a text area", function() {
       var j;
@@ -29,8 +29,7 @@
     return it("should allow return and tab in text", function() {
       var j;
       j = new JSONEditor($("#t_returns_and_tabs"));
-      expect(j.json['hello']).toEqual('wo\\nr\\tld');
-      return expect(j.json['how']).toEqual('g\\noe\\\\ts?');
+      return expect(j.json['hello']).toEqual('wo\\nr\\tld');
     });
   });
 
