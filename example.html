@@ -11,7 +11,7 @@
       $(document).ready(function(){
         JSONEditor.prototype.ADD_IMG = 'lib/images/add.png';
         JSONEditor.prototype.DELETE_IMG = 'lib/images/delete.png';
-        var j = new JSONEditor($("#t"), 400, 400);
+        var j = new JSONEditor($("#t"), 400, 400, { showWipe: false });
         j.doTruncation(true);
         j.showFunctionButtons();
       });
