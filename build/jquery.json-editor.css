@@ -2,7 +2,10 @@
   background-color: #FFF;
   position: relative; }
   .json-editor textarea {
+    width: 100%;
     font-family: monospace; }
+  .json-editor .edit_field {
+    height: 17px; }
   .json-editor .builder {
     background-color: white;
     overflow: auto;
@@ -12,7 +15,7 @@
       .json-editor .builder .key .edit_field {
         width: 80px; }
     .json-editor .builder .val .edit_field {
-      width: 180px; }
+      width: 250px; }
   .json-editor blockquote {
     margin: 0;
     padding: 0;
@@ -32,5 +35,5 @@
     float: right;
     text-decoration: none;
     padding-left: 5px;
-    border: 0 !important;
+    border: 0;
     color: blue; }

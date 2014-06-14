@@ -1,21 +1,26 @@
 .json-editor {
   background-color:#FFF;
-  position:relative;
+  position: relative;
 
   textarea {
+    width: 100%;
     font-family: monospace;
   }
 
+  .edit_field {
+    height: 17px;
+  }
+
   .builder {
-    background-color:white;
-    overflow:auto;
+    background-color: white;
+    overflow: auto;
     font-size: 0.9em;
 
     .key {
       font-weight: bold;
 
       .edit_field {
-        width:80px;
+        width: 80px;
       }
     }
 
@@ -23,44 +28,40 @@
 
     .val {
       .edit_field {
-        width:180px;
+        width: 250px;
       }
-    }
-
-    .editable {
-
     }
   }
 
   blockquote {
-    margin:0;
-    padding:0;
-    clear:both;
-    padding-left:7px;
+    margin: 0;
+    padding: 0;
+    clear: both;
+    padding-left: 7px;
   }
 
   div {
-    background-color:#cfc;
-    margin:1px;
-    padding:2px;
+    background-color: #cfc;
+    margin: 1px;
+    padding: 2px;
   }
 
   .val {
-    font-style:italic;
+    font-style: italic;
   }
 
   .key a, .val a {
-    color:black;
-    text-decoration:none;
+    color: black;
+    text-decoration: none;
   }
 
   .icon {
-    display:block;
-    float:right;
-    text-decoration:none;
-    padding-left:5px;
-    border:0 !important;
-    color:blue;
+    display: block;
+    float: right;
+    text-decoration: none;
+    padding-left: 5px;
+    border: 0;
+    color: blue;
   }
 }
 

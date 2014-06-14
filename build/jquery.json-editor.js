@@ -41,8 +41,7 @@
 
   window.JSONEditor = (function() {
 
-    function JSONEditor(wrapped, width, height, options) {
-      var _this = this;
+    function JSONEditor(wrapped, options) {
       if (options == null) {
         options = {};
       }
@@ -57,22 +56,14 @@
       if (wrapped === null || (wrapped.get && wrapped.get(0) === null)) {
         throw "Must provide an element to wrap.";
       }
-      width = width || 600;
-      height = height || 300;
       this.wrapped = $(wrapped);
       this.wrapped.wrap('<div class="json-editor"></div>');
       this.container = $(this.wrapped.parent());
-      this.container.width(width).height(height);
-      this.wrapped.width(width).height(height);
       this.wrapped.hide();
       this.container.css("position", "relative");
       this.doAutoFocus = false;
       this.editingUnfocused();
       this.rebuild();
-      this.container.focus(function() {
-        $(_this).children('textarea').height(_this.container.height() - _this.functionButtons.height() - 5);
-        return $(_this).children('.builder').height(_this.container.height() - _this.functionButtons.height() - 10);
-      });
     }
 
     JSONEditor.prototype.braceUI = function(key, struct) {
@@ -225,12 +216,7 @@
           e.preventDefault();
           return _this.toggleBuilder();
         }));
-        this.container.prepend(this.functionButtons);
-        this.container.height(this.container.height() + this.functionButtons.height() + 5);
-      }
-      if (this.functionButtons) {
-        this.wrapped.css('top', this.functionButtons.height() + 5 + 'px');
-        return this.builder.css('top', this.functionButtons.height() + 5 + 'px');
+        return this.container.prepend(this.functionButtons);
       }
     };
 
@@ -366,9 +352,6 @@
       }
       this.saveScrollPosition();
       this.builder.text('');
-      this.builder.css("position", "absolute").css("top", 0).css("left", 0);
-      this.builder.width(this.wrapped.width()).height(this.wrapped.height());
-      this.wrapped.css("position", "absolute").css("top", 0).css("left", 0);
       return this.showFunctionButtons("defined");
     };
 

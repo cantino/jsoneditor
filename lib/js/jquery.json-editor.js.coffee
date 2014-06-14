@@ -36,7 +36,7 @@
 ###
 
 class window.JSONEditor
-  constructor: (wrapped, width, height, options = {}) ->
+  constructor: (wrapped, options = {}) ->
     @builderShowing = true
     @ADD_IMG ||= options.ADD_IMG || 'lib/images/add.png'
     @DELETE_IMG ||= options.DELETE_IMG || 'lib/images/delete.png'
@@ -47,23 +47,16 @@ class window.JSONEditor
     @history = []
     @historyPointer = -1
     throw("Must provide an element to wrap.") if wrapped == null || (wrapped.get && wrapped.get(0) == null)
-    width = width || 600
-    height = height || 300
     @wrapped = $(wrapped)
 
     @wrapped.wrap('<div class="json-editor"></div>')
     @container = $(@wrapped.parent())
-    @container.width(width).height(height)
-    @wrapped.width(width).height(height)
     @wrapped.hide()
     @container.css("position", "relative")
     @doAutoFocus = false
     @editingUnfocused()
 
     @rebuild()
-    @container.focus =>
-      $(this).children('textarea').height(@container.height() - @functionButtons.height() - 5)
-      $(this).children('.builder').height(@container.height() - @functionButtons.height() - 10)
 
   braceUI: (key, struct) ->
     $('<a class="icon" href="#"><strong>{</strong></a>').click (e) =>
@@ -177,11 +170,6 @@ class window.JSONEditor
         @toggleBuilder()
 
       @container.prepend(@functionButtons)
-      @container.height(@container.height() + @functionButtons.height() + 5)
-
-    if @functionButtons
-      @wrapped.css('top', @functionButtons.height() + 5 + 'px')
-      @builder.css('top', @functionButtons.height() + 5 + 'px')
 
   saveStateIfTextChanged: ->
     if JSON.stringify(@json, null, 2) != @wrapped.get(0).value
@@ -282,13 +270,8 @@ class window.JSONEditor
     unless @builder
       @builder = $('<div class="builder"></div>')
       @container.append(@builder)
-
     @saveScrollPosition()
     @builder.text('')
-
-    @builder.css("position", "absolute").css("top", 0).css("left", 0)
-    @builder.width(@wrapped.width()).height(@wrapped.height())
-    @wrapped.css("position", "absolute").css("top", 0).css("left", 0)
     @showFunctionButtons("defined")
 
   updateStruct: (struct, key, val, kind, selectionStart, selectionEnd) ->
