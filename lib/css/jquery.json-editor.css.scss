@@ -2,6 +2,10 @@
   background-color:#FFF;
   position:relative;
 
+  textarea {
+    font-family: monospace;
+  }
+
   .builder {
     background-color:white;
     overflow:auto;
