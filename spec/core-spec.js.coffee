@@ -40,3 +40,9 @@ describe "basic functionality", ->
   it "should allow return and tab in text", ->
     j = new JSONEditor($("#t_returns_and_tabs"))
     expect(j.json['hello']).toEqual 'wo\\nr\\tld'
+
+  it "should focus on the key when an object property is added", ->
+    j = new JSONEditor($("#t_empty1"))
+    $('[title="add"]').click()
+    expect($('.key .edit_field').is(':focus')).toEqual(true)
+

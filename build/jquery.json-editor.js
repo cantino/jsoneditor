@@ -529,7 +529,7 @@
           }
           innerbq.append($('<span class="colon">: </span>'));
           newElem = this.build(jsonvalue, innerbq, json, jsonkey, root);
-          if (newElem && newElem.text() === "??") {
+          if (!elem && newElem && newElem.text() === "??") {
             elem = newElem;
           }
           bq.append(innerbq);

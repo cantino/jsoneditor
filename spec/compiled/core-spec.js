@@ -26,10 +26,16 @@
       j.setJsonFromText();
       return expect(j.json['hello']).toEqual("world");
     });
-    return it("should allow return and tab in text", function() {
+    it("should allow return and tab in text", function() {
       var j;
       j = new JSONEditor($("#t_returns_and_tabs"));
       return expect(j.json['hello']).toEqual('wo\\nr\\tld');
+    });
+    return it("should focus on the key when an object property is added", function() {
+      var j;
+      j = new JSONEditor($("#t_empty1"));
+      $('[title="add"]').click();
+      return expect($('.key .edit_field').is(':focus')).toEqual(true);
     });
   });
 

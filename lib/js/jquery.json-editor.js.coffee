@@ -224,7 +224,6 @@ class window.JSONEditor
     @setJsonFromText()
     @alreadyFocused = false
     elem = @build(@json, @builder, null, null, @json)
-
     @recoverScrollPosition()
 
     # Auto-focus to edit '??' keys and values.
@@ -409,7 +408,7 @@ class window.JSONEditor
 
         innerbq.append($('<span class="colon">: </span>'))
         newElem = @build(jsonvalue, innerbq, json, jsonkey, root)
-        elem = newElem if newElem && newElem.text() == "??"
+        elem = newElem if !elem && newElem && newElem.text() == "??"
         bq.append(innerbq)
 
       bq.prepend(@addUI(json))
