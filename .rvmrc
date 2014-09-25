@@ -1,1 +1,1 @@
-rvm use 1.9.3@jsoneditor --create
+rvm use 2.1.2@jsoneditor --create
