@@ -419,6 +419,8 @@ class window.JSONEditor
       bq.append($('<div class="bracers">}</div>'))
       node.append(bq)
     else
+      if json == null
+        json = ''
       elem = @editable(json.toString(), key, parent, root, 'value').wrap('<span class="val"></span>').parent();
       node.append(elem)
       node.prepend(@braceUI(key, parent))

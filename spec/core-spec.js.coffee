@@ -15,6 +15,11 @@ describe "basic functionality", ->
       <textarea id="t_empty1">{}</textarea>
       <textarea id="t_empty2">{}</textarea>
       <textarea id="t_returns_and_tabs">{"hello": "wo\\nr\\tld"}</textarea>
+      <textarea id="t_null">
+        {
+          "null": null
+        }
+      </textarea>
     """
 
   it "should load from a text area", ->
@@ -46,3 +51,7 @@ describe "basic functionality", ->
     $('[title="add"]').click()
     expect($('.key .edit_field').is(':focus')).toEqual(true)
 
+  it "should handle null values without exceptions", ->
+    j = new JSONEditor($("#t_null"))
+    console.log(j.getJSON())
+    expect(j.getJSON()['null']).toEqual null
